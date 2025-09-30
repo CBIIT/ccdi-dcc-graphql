@@ -76,7 +76,7 @@ The GraphQL schema includes types for:
 docker build -t ccdi-dcc-graphql .
 
 # Run with environment variables
-docker run -p 9000:9000 -e NEO4J_URI=bolt://your-db:7687 ccdi-dcc-graphql
+docker run -p 9000:9000 -e DB_URI=bolt://your-db:7687 ccdi-dcc-graphql
 ```
 
 ## Configuration
@@ -219,16 +219,4 @@ query FilesForSample {
 └── README.md              # This file
 ```
 
-### Adding Custom Resolvers
-Custom business logic can be added to the `resolvers` object in `index.js`:
-
-```javascript
-const resolvers = {
-    Query: {
-        customQuery: async (parent, args, context) => {
-            // Custom resolver logic
-        }
-    }
-};
-```
 

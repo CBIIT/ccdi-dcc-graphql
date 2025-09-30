@@ -17,15 +17,17 @@ RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 # Copy application code
 COPY --chown=nodejs:nodejs . .
 
+# Set default environment variables (can be overridden at runtime)
+ENV PORT=9000
+ENV DB_URI=${DB_URI}
+ENV DB_USERNAME=${DB_USERNAME}
+ENV DB_PASSWORD=${DB_PASSWORD}
+
 # Switch to non-root user
 USER nodejs
 
 # Expose the correct port (app listens on 9000, not 4000)
 EXPOSE 9000
-
-# Add health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:9000/.well-known/apollo/server-health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Run Apollo server
 CMD ["node", "index.js"]
