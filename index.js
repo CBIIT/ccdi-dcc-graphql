@@ -14,7 +14,6 @@ dotenv.config();
 
 const typeDefs = readFileSync('./schema.graphql', 'utf8');
 
-console.log(process.env)
 const driver = neo4j.driver(
     process.env.DB_URI || "bolt://localhost:7687",
     neo4j.auth.basic(process.env.DB_USERNAME || "", process.env.DB_PASSWORD || "")
