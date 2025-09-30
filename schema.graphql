@@ -1,0 +1,609 @@
+#graphql
+
+
+# Type for field count results
+type FieldCount {
+  field: String!
+  count: Int!
+}
+
+
+type laboratory_test {
+  id: String
+  created: String
+  uuid: String
+  laboratory_test_id: String
+  laboratory_test_method: String
+  laboratory_test_name: String
+  test_result_numeric: String
+  test_result_text: String
+  test_unit: String
+  age_at_laboratory_test: String
+  samples: [sample!]! @relationship(type: "of_laboratory_test", direction: OUT)
+  participants: [participant!]! @relationship(type: "of_laboratory_test", direction: OUT)
+}
+
+type genetic_analysis {
+  id: String
+  created: String
+  uuid: String
+  age_at_genetic_analysis: String
+  alteration: String
+  chromosome: String
+  chromosome_location: String
+  cytoband: String
+  exon: String
+  fusion_partner_exon: String
+  fusion_partner_gene: String
+  fusion_partner_transcript: String
+  gene_symbol: String
+  genetic_analysis_id: String
+  genomic_source_category: String
+  hgvs_coding: String
+  hgvs_genome: String
+  hgvs_protein: String
+  karyotype: String
+  reference_genome: String
+  reported_significance: String
+  reported_significance_system: String
+  result: String
+  status: String
+  test: String
+  transcript: String
+  vaf_numeric: String
+  samples: [sample!]! @relationship(type: "of_genetic_analysis", direction: OUT)
+}
+
+type study_arm {
+  id: String
+  created: String
+  uuid: String
+  clinical_trial_identifier: String
+  clinical_trial_repository: String
+  study_arm_description: String
+  study_arm_id: String
+  updated: String
+  studies: [study!]! @relationship(type: "of_study_arm", direction: OUT)
+}
+
+type sequencing_file {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  acl: String
+  authz: String
+  checksum_algorithm: String
+  checksum_value: String
+  data_category: String
+  dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: String
+  file_type: String
+  file_url: String
+  md5sum: String
+  updated: String
+  UMI_barcode_offset: String
+  UMI_barcode_read: String
+  UMI_barcode_size: String
+  cDNA_read: String
+  cDNA_read_offset: String
+  cDNA_read_size: String
+  cell_barcode_offset: String
+  cell_barcode_read: String
+  cell_barcode_size: String
+  custom_assembly_fasta_file_for_alignment: String
+  design_description: String
+  dissociation_method: String
+  end_bias: String
+  instrument_model: String
+  library_construction_method: String
+  library_id: String
+  library_layout: String
+  library_selection: String
+  library_source_material: String
+  library_source_molecule: String
+  library_strand: String
+  library_strategy: String
+  platform: String
+  protocols_link: String
+  reference_genome_assembly: String
+  reverse_transcription_primer: String
+  sequence_alignment_software: String
+  sequencing_file_id: String
+  single_cell_entity: String
+  spike_in: String
+  total_number_of_input_cells: String
+  avg_read_length: String
+  number_of_bp: String
+  number_of_reads: String
+  coverage: String
+  samples: [sample!]! @relationship(type: "of_sequencing_file", direction: OUT)
+}
+
+type study {
+  dbgap_accession: String
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  curation_status: String
+  experimental_strategy_and_data_subtype: String
+  external_url: String
+  size_of_data_being_uploaded: String
+  study_acronym: String
+  study_data_types: String
+  study_description: String
+  study_id: String
+  study_name: String
+  study_status: String
+  updated: String
+  cell_lines: [cell_line!]! @relationship(type: "of_cell_line", direction: IN)
+  study_personnels: [study_personnel!]! @relationship(type: "of_study_personnel", direction: IN)
+  study_fundings: [study_funding!]! @relationship(type: "of_study_funding", direction: IN)
+  consent_groups: [consent_group!]! @relationship(type: "of_consent_group", direction: IN)
+  study_admins: [study_admin!]! @relationship(type: "of_study_admin", direction: IN)
+  study_arms: [study_arm!]! @relationship(type: "of_study_arm", direction: IN)
+  clinical_measure_files: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
+  publications: [publication!]! @relationship(type: "of_publication", direction: IN)
+  generic_files: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
+}
+
+type exposure {
+  id: String
+  created: String
+  uuid: String
+  age_at_exposure: String
+  alcohol_days_per_week: String
+  alcohol_drinks_per_day: String
+  alcohol_history: String
+  alcohol_intensity: String
+  asbestos_exposure: String
+  cigarettes_per_day: String
+  coal_dust_exposure: String
+  environmental_tobacco_smoke_exposure: String
+  exposure_id: String
+  radon_exposure: String
+  respirable_crystalline_silica_exposure: String
+  smoking_frequency: String
+  time_between_waking_and_first_smoke: String
+  tobacco_smoking_status: String
+  type_of_smoke_exposure: String
+  type_of_tobacco_used: String
+  years_smoked: String
+  tobacco_smoking_quit_year: String
+  pack_years_smoked: String
+  tobacco_smoking_onset_year: String
+  participants: [participant!]! @relationship(type: "of_exposure", direction: OUT)
+}
+
+type synonym {
+  id: String
+  created: String
+  uuid: String
+  associated_id: String
+  data_location: String
+  domain_category: String
+  domain_description: String
+  repository_of_synonym_id: String
+  synonym_id: String
+  updated: String
+  samples: [sample!]! @relationship(type: "of_synonym", direction: OUT)
+  participants: [participant!]! @relationship(type: "of_synonym", direction: OUT)
+}
+
+type study_funding {
+  id: String
+  created: String
+  uuid: String
+  funding_agency: String
+  funding_source_program_name: String
+  grant_id: String
+  study_funding_id: String
+  updated: String
+  studies: [study!]! @relationship(type: "of_study_funding", direction: OUT)
+}
+
+type diagnosis {
+  id: String
+  created: String
+  uuid: String
+  diagnosis: String
+  age_at_diagnosis: String
+  anatomic_site: String
+  diagnosis_basis: String
+  diagnosis_category: String
+  diagnosis_classification_system: String
+  diagnosis_comment: String
+  diagnosis_id: String
+  disease_phase: String
+  laterality: String
+  toronto_childhood_cancer_staging: String
+  tumor_classification: String
+  tumor_grade: String
+  tumor_grade_source: String
+  tumor_stage_clinical_m: String
+  tumor_stage_clinical_n: String
+  tumor_stage_clinical_t: String
+  tumor_stage_source: String
+  year_of_diagnosis: String
+  updated: String
+  participants: [participant!]! @relationship(type: "of_diagnosis", direction: OUT)
+  samples: [sample!]! @relationship(type: "of_diagnosis", direction: OUT)
+}
+
+type clinical_measure_file {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  acl: String
+  authz: String
+  checksum_algorithm: String
+  checksum_value: String
+  clinical_measure_file_id: String
+  data_category: String
+  dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: String
+  file_type: String
+  file_url: String
+  md5sum: String
+  participant_list: String
+  updated: String
+  participants: [participant!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
+  studies: [study!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
+}
+
+type treatment_response {
+  id: String
+  created: String
+  uuid: String
+  age_at_response: String
+  response: String
+  response_category: String
+  response_system: String
+  treatment_response_id: String
+  participants: [participant!]! @relationship(type: "of_treatment_response", direction: OUT)
+}
+
+type participant {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  participant_id: String
+  race: String
+  sex_at_birth: String
+  updated: String
+  clinical_measure_files: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
+  radiology_files: [radiology_file!]! @relationship(type: "of_radiology_file", direction: IN)
+  exposures: [exposure!]! @relationship(type: "of_exposure", direction: IN)
+  laboratory_tests: [laboratory_test!]! @relationship(type: "of_laboratory_test", direction: IN)
+  survivals: [survival!]! @relationship(type: "of_survival", direction: IN)
+  diagnosis: [diagnosis!]! @relationship(type: "of_diagnosis", direction: IN)
+  medical_histories: [medical_history!]! @relationship(type: "of_medical_history", direction: IN)
+  treatments: [treatment!]! @relationship(type: "of_treatment", direction: IN)
+  synonyms: [synonym!]! @relationship(type: "of_synonym", direction: IN)
+  family_relationships: [family_relationship!]! @relationship(type: "of_family_relationship", direction: IN)
+  consent_groups: [consent_group!]! @relationship(type: "of_participant", direction: OUT)
+  samples: [sample!]! @relationship(type: "of_sample", direction: IN)
+  treatment_responses: [treatment_response!]! @relationship(type: "of_treatment_response", direction: IN)
+}
+
+type pathology_file {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  acl: String
+  authz: String
+  data_category: String
+  dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: String
+  file_type: String
+  file_url: String
+  md5sum: String
+  deidentification_method: String
+  fixation_embedding_method: String
+  image_modality: String
+  license: String
+  magnification: String
+  pathology_file_id: String
+  slim_url: String
+  staining_method: String
+  updated: String
+  samples: [sample!]! @relationship(type: "of_pathology_file", direction: OUT)
+}
+
+type publication {
+  id: String
+  created: String
+  uuid: String
+  publication_id: String
+  pubmed_id: String
+  updated: String
+  studies: [study!]! @relationship(type: "of_publication", direction: OUT)
+}
+
+type pdx {
+  id: String
+  created: String
+  uuid: String
+  implantation_site: String
+  implantation_type: String
+  is_tumor_from_untreated_patient: String
+  model_id: String
+  mouse_strain: String
+  passage_number: String
+  passages_tested: String
+  pdx_id: String
+  sample_type_for_implantation: String
+  tumor_confirmed_not_to_be_mus_or_ebv_origin: String
+  validation_technique: String
+  samples: [sample!]! @relationship(type: "of_pdx", direction: OUT)
+}
+
+type study_personnel {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  email_address: String
+  institution: String
+  orcid: String
+  personnel_name: String
+  personnel_type: String
+  study_personnel_id: String
+  updated: String
+  studies: [study!]! @relationship(type: "of_study_personnel", direction: OUT)
+}
+
+type consent_group {
+  id: String
+  created: String
+  uuid: String
+  consent_group_id: String
+  consent_group_name: String
+  consent_group_number: String
+  consent_group_suffix: String
+  updated: String
+  studies: [study!]! @relationship(type: "of_consent_group", direction: OUT)
+  participants: [participant!]! @relationship(type: "of_participant", direction: IN)
+}
+
+type study_admin {
+  id: String
+  created: String
+  adult_or_childhood_study: String
+  file_types_and_format: String
+  organism_species: String
+  study_admin_id: String
+  uuid: String
+  updated: String
+  number_of_participants: String
+  number_of_samples: String
+  studies: [study!]! @relationship(type: "of_study_admin", direction: OUT)
+}
+
+type cell_line {
+  id: String
+  created: String
+  uuid: String
+  cell_line_id: String
+  source: String
+  studies: [study!]! @relationship(type: "of_cell_line", direction: OUT)
+  samples: [sample!]! @relationship(type: "of_cell_line", direction: OUT)
+}
+
+type survival {
+  id: String
+  created: String
+  uuid: String
+  adverse_event: String
+  age_at_last_known_survival_status: String
+  cause_of_death: String
+  comorbidity: String
+  comorbidity_method_of_diagnosis: String
+  event_free_survival_status: String
+  first_event: String
+  follow_up_category: String
+  follow_up_other: String
+  last_known_survival_status: String
+  risk_factor: String
+  survival_id: String
+  updated: String
+  age_at_event_free_survival_status: String
+  participants: [participant!]! @relationship(type: "of_survival", direction: OUT)
+}
+
+type treatment {
+  id: String
+  created: String
+  uuid: String
+  age_at_treatment_end: String
+  age_at_treatment_start: String
+  dose: String
+  dose_frequency: String
+  dose_route: String
+  dose_unit: String
+  treatment_agent: String
+  treatment_id: String
+  treatment_type: String
+  participants: [participant!]! @relationship(type: "of_treatment", direction: OUT)
+}
+
+type sample {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  anatomic_site: String
+  tumor_classification: String
+  updated: String
+  participant_age_at_collection: String
+  sample_description: String
+  sample_id: String
+  sample_tumor_status: String
+  cytogenomic_files: [cytogenomic_file!]! @relationship(type: "of_cytogenomic_file", direction: IN)
+  laboratory_tests: [laboratory_test!]! @relationship(type: "of_laboratory_test", direction: IN)
+  synonyms: [synonym!]! @relationship(type: "of_synonym", direction: IN)
+  methylation_array_files: [methylation_array_file!]! @relationship(type: "of_methylation_array_file", direction: IN)
+  sequencing_files: [sequencing_file!]! @relationship(type: "of_sequencing_file", direction: IN)
+  pathology_files: [pathology_file!]! @relationship(type: "of_pathology_file", direction: IN)
+  diagnosis: [diagnosis!]! @relationship(type: "of_diagnosis", direction: IN)
+  participants: [participant!]! @relationship(type: "of_sample", direction: OUT)
+  cell_lines: [cell_line!]! @relationship(type: "of_cell_line", direction: IN)
+  genetic_analysis: [genetic_analysis!]! @relationship(type: "of_genetic_analysis", direction: IN)
+  pdxs: [pdx!]! @relationship(type: "of_sample", direction: OUT)
+}
+
+type methylation_array_file {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  acl: String
+  authz: String
+  data_category: String
+  dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: String
+  file_type: String
+  file_url: String
+  md5sum: String
+  methylation_array_file_id: String
+  methylation_platform: String
+  reporter_label: String
+  samples: [sample!]! @relationship(type: "of_methylation_array_file", direction: OUT)
+}
+
+type generic_file {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  acl: String
+  authz: String
+  data_category: String
+  dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: String
+  file_type: String
+  file_url: String
+  md5sum: String
+  generic_file_id: String
+  studies: [study!]! @relationship(type: "of_generic_file", direction: OUT)
+}
+
+type medical_history {
+  id: String
+  created: String
+  uuid: String
+  medical_history_category: String
+  medical_history_condition: String
+  medical_history_id: String
+  participants: [participant!]! @relationship(type: "of_medical_history", direction: OUT)
+}
+
+type family_relationship {
+  id: String
+  created: String
+  uuid: String
+  family_id: String
+  family_relationship_id: String
+  related_to_participant_id: String
+  relationship: String
+  participants: [participant!]! @relationship(type: "of_family_relationship", direction: OUT)
+}
+
+type radiology_file {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  anatomic_site: String
+  acl: String
+  authz: String
+  data_category: String
+  dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: String
+  file_type: String
+  file_url: String
+  md5sum: String
+  deidentification_method: String
+  image_modality: String
+  acquisitionContrastCode: String
+  arterialSpinLabelingContrastCode: String
+  complexImageComponentCode: String
+  diffusionBValue: String
+  diffusionDirectionalityCode: String
+  echoPlanarPulseSequenceIndicator: String
+  echoPulseSequenceCategoryCode: String
+  echo_time: String
+  flip_angle: String
+  imaging_frequency: String
+  inversionRecoveryIndicator: String
+  inversion_time: String
+  magnetic_field_strength: String
+  mrImageReconstructionProtocolElement: String
+  multipleSpinEchoIndicator: String
+  participant_age_at_imaging: String
+  phaseContrastIndicator: String
+  pixel_spacing: String
+  pulseSequenceName: String
+  radiology_file_id: String
+  repetition_time: String
+  resonantNucleusCode: String
+  saturationRecoveryIndicator: String
+  scanner_manufacturer: String
+  scanner_model: String
+  slice_thickness: String
+  spectrallySelectedSuppressionCode: String
+  steadyStatePulseSequenceCode: String
+  timeOfFlightContrastIndicator: String
+  participants: [participant!]! @relationship(type: "of_radiology_file", direction: OUT)
+}
+
+type cytogenomic_file {
+  id: String
+  created: String
+  uuid: String
+  crdc_id: String
+  acl: String
+  authz: String
+  data_category: String
+  dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: String
+  file_type: String
+  file_url: String
+  md5sum: String
+  cytogenomic_file_id: String
+  cytogenomic_platform: String
+  samples: [sample!]! @relationship(type: "of_cytogenomic_file", direction: OUT)
+}
+
