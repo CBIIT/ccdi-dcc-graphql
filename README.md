@@ -40,6 +40,7 @@ The GraphQL schema includes types for:
 
 ### Prerequisites
 - Node.js 20 or higher
+- Python 3.7+ (for schema generation utilities)
 - Neo4j or Memgraph database instance
 - NPM or Yarn package manager
 
@@ -66,7 +67,23 @@ The GraphQL schema includes types for:
    node index.js
    ```
 
-5. **Access GraphQL Playground**
+5. **Set up Python environment (for schema generation)**
+   ```bash
+   # Create Python virtual environment
+   python3 -m venv venv
+   
+   # Activate virtual environment
+   source venv/bin/activate  # On macOS/Linux
+   # venv\Scripts\activate   # On Windows
+   
+   # Install Python dependencies
+   pip install PyYAML
+   
+   # Deactivate when done
+   deactivate
+   ```
+
+6. **Access GraphQL Playground**
    - Development: `http://localhost:9000`
    - Production endpoints as configured
 
@@ -93,17 +110,54 @@ docker run -p 9000:9000 -e DB_URI=bolt://your-db:7687 ccdi-dcc-graphql
 ## Schema Management
 
 ### GraphQL Schema Generation
-The project includes a Python utility to generate GraphQL schema from Memgraph schema JSON:
+
+The project includes two Python utilities for generating GraphQL schemas:
+
+#### 1. From Memgraph Schema JSON
+Generate GraphQL schema from Memgraph schema JSON:
 
 ```bash
 python memgraph-schema-graphql.py schema.json > schema.graphql
 ```
 
-This tool:
-- Converts node labels to GraphQL types
-- Maps properties to appropriate GraphQL field types  
+#### 2. From CCDI DCC Model YAML Files
+Generate GraphQL schema from CCDI DCC model definition files:
+
+```bash
+# Prerequisites: Set up Python virtual environment and install dependencies
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+# venv\Scripts\activate
+
+# Install required Python packages
+pip install PyYAML
+
+# Generate schema from YAML model files
+python data-model-schema-graphql.py external/ccdi-dcc-model/model-desc/ccdi-dcc-model.yml external/ccdi-dcc-model/model-desc/ccdi-dcc-model-props.yml > schema-from-model.graphql
+
+# Deactivate virtual environment when done
+deactivate
+```
+
+**Features of `data-model-schema-graphql.py`:**
+- Parses CCDI DCC model YAML files (`ccdi-dcc-model.yml` and `ccdi-dcc-model-props.yml`)
+- Converts node definitions to GraphQL types
+- Maps properties to appropriate GraphQL field types based on property definitions
 - Generates relationship fields with `@relationship` directives
-- Includes custom query types for data aggregation
+- Handles proper type inference (String, Int, Boolean, Float)
+- Supports complex biomedical data model relationships
+- Includes field count aggregation types
+
+**Both tools:**
+- Convert node labels to GraphQL types
+- Map properties to appropriate GraphQL field types  
+- Generate relationship fields with `@relationship` directives
+- Include custom query types for data aggregation
 
 
 ## API Usage
@@ -210,13 +264,18 @@ query FilesForSample {
 
 ### Project Structure
 ```
-├── index.js                 # Main Apollo Server application
-├── schema.graphql          # GraphQL type definitions
-├── memgraph-schema-graphql.py # Schema generation utility
-├── package.json            # Node.js dependencies
-├── Dockerfile             # Container configuration  
-├── .env.example           # Environment template
-└── README.md              # This file
+├── index.js                      # Main Apollo Server application
+├── schema.graphql               # GraphQL type definitions
+├── memgraph-schema-graphql.py   # Schema generation from Memgraph JSON
+├── data-model-schema-graphql.py # Schema generation from CCDI model YAML
+├── package.json                 # Node.js dependencies
+├── Dockerfile                   # Container configuration  
+├── docker-compose.yml           # Multi-container setup
+├── .env.example                 # Environment template
+├── venv/                        # Python virtual environment (created locally)
+├── external/                    # External model definitions
+│   └── ccdi-dcc-model/         # CCDI DCC model YAML files
+└── README.md                    # This file
 ```
 
 
