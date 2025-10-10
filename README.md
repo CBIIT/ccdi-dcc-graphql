@@ -109,18 +109,7 @@ docker run -p 9000:9000 -e DB_URI=bolt://your-db:7687 ccdi-dcc-graphql
 
 ## Schema Management
 
-### GraphQL Schema Generation
-
-The project includes two Python utilities for generating GraphQL schemas:
-
-#### 1. From Memgraph Schema JSON
-Generate GraphQL schema from Memgraph schema JSON:
-
-```bash
-python memgraph-schema-graphql.py schema.json > schema.graphql
-```
-
-#### 2. From CCDI DCC Model YAML Files
+####  From CCDI DCC Model YAML Files
 Generate GraphQL schema from CCDI DCC model definition files:
 
 ```bash

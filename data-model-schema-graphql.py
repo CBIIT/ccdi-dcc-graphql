@@ -132,68 +132,47 @@ def generate_node_type(node_name: str, node_def: Dict[str, Any],
             lines.append(f"  {prop_name}: {field_type}")
     
     # Add relationship fields
+    # Updated logic: KEEP duplicates and use semantic names instead of numeric suffixes.
+    # Naming convention:
+    #   OUT relationship (this node -> target): <singular_target>_<relationship_type>
+    #   IN relationship  (other node -> this): <singular_thisnode>_<relationship_type>
+    # If a generated name collides, append incremental suffix (_2, _3, ...)
     node_relationships = relationship_map.get(node_name, [])
-    added_relationships = set()
-    added_field_names = set()
-    
-    # First pass: process OUT relationships first to prioritize them
-    for rel_type, target_node, direction in node_relationships:
-        if direction != "OUT":
-            continue
-            
-        # Create unique key for this relationship to avoid duplicates
-        rel_key = f"{rel_type}_{target_node}_{direction}"
-        if rel_key in added_relationships:
-            continue
-        added_relationships.add(rel_key)
-        
-        # Generate field name - use plural form for arrays
-        field_name = target_node
-        if not field_name.endswith('s') and target_node != node_name:
-            # Make plural for collections
-            if target_node.endswith('y'):
-                field_name = target_node[:-1] + 'ies'
-            elif target_node.endswith('s'):
-                field_name = target_node
-            else:
-                field_name = target_node + 's'
-        
-        # Track field names to avoid duplicates
-        added_field_names.add(field_name)
-        
-        # Always use arrays for @relationship directive
-        lines.append(f"  {field_name}: [{target_node}!]! @relationship(type: \"{rel_type}\", direction: {direction})")
-    
-    # Second pass: process IN relationships, but skip if field name already exists
-    for rel_type, target_node, direction in node_relationships:
-        if direction != "IN":
-            continue
-            
-        # Create unique key for this relationship to avoid duplicates
-        rel_key = f"{rel_type}_{target_node}_{direction}"
-        if rel_key in added_relationships:
-            continue
-        added_relationships.add(rel_key)
-        
-        # Generate field name - use plural form for arrays
-        field_name = target_node
-        if not field_name.endswith('s') and target_node != node_name:
-            # Make plural for collections
-            if target_node.endswith('y'):
-                field_name = target_node[:-1] + 'ies'
-            elif target_node.endswith('s'):
-                field_name = target_node
-            else:
-                field_name = target_node + 's'
-        
-        # Skip if field name already exists (prioritize OUT relationships)
-        if field_name in added_field_names:
-            continue
-            
-        added_field_names.add(field_name)
-        
-        # Always use arrays for @relationship directive
-        lines.append(f"  {field_name}: [{target_node}!]! @relationship(type: \"{rel_type}\", direction: {direction})")
+
+    # Order OUT before IN for readability
+    ordered_relationships: List[Tuple[str, str, str]] = (
+        [r for r in node_relationships if r[2] == "OUT"] +
+        [r for r in node_relationships if r[2] == "IN"]
+    )
+
+    used_field_names: Dict[str, int] = {}
+
+    def singularize(name: str) -> str:
+        # Very lightweight singularization suitable for current model naming
+        if name.endswith('ies'):
+            return name[:-3] + 'y'
+        if name.endswith('ses'):
+            return name[:-2]  # e.g., processes -> process (not expected here)
+        if name.endswith('s') and not name.endswith('ss'):
+            return name[:-1]
+        return name
+
+    for rel_type, target_node, direction in ordered_relationships:
+        if direction == "OUT":
+            base = f"{singularize(target_node)}_{rel_type}"
+        else:  # IN
+            base = f"{singularize(node_name)}_{rel_type}"
+
+        # Normalize to lower_snake_case already present; ensure no accidental capitals
+        base = base.lower()
+
+        count = used_field_names.get(base, 0)
+        used_field_names[base] = count + 1
+        field_name = base if count == 0 else f"{base}_{count+1}"
+
+        lines.append(
+            f"  {field_name}: [{target_node}!]! @relationship(type: \"{rel_type}\", direction: {direction})"
+        )
     
     lines.append("}")
     lines.append("")
