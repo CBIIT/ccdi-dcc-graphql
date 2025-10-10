@@ -34,15 +34,14 @@ const neoSchema = new Neo4jGraphQL({
  
 
 let plugins = [];
-if (process.env.NODE_ENV !== "production") {
-  plugins = [ApolloServerPluginLandingPageGraphQLPlayground({ embed: true, graphRef: "myGraph@prod" })];
-} else {
-  plugins = [ApolloServerPluginLandingPageGraphQLPlayground({ embed: true })];
-}
+  // Use default landing page instead of GraphQL Playground to avoid auto-suggestions
+  plugins = [ApolloServerPluginLandingPageLocalDefault()];
 
 
 const server = new ApolloServer({
     schema: await neoSchema.getSchema(),
+    introspection: true,
+    debug: true,
     plugins
 });
 const { url } = await startStandaloneServer(server, {
