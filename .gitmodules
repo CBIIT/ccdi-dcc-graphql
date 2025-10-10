@@ -1,0 +1,3 @@
+[submodule "external/ccdi-dcc-model"]
+	path = external/ccdi-dcc-model
+	url = https://github.com/CBIIT/ccdi-dcc-model.git

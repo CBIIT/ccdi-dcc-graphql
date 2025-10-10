@@ -64,7 +64,15 @@ jspm_packages/
 .env.development.local
 .env.test.local
 .env.production.local
-
+.env.development
+.env.staging
+.env.production
+.env.*.local
+*.env
+env.js
+env.json
+config.json
+secrets.json
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -143,3 +151,6 @@ neo4j/
 build/
 dist/
 lib/
+
+# python env
+venv

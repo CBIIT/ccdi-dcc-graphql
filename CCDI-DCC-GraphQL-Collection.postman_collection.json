@@ -1,0 +1,1046 @@
+{
+  "info": {
+    "name": "CCDI DCC GraphQL API",
+    "description": "GraphQL API collection for CCDI DCC schema with queries for all node types",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "ccdi-dcc-graphql-collection",
+    "version": {
+      "major": 1,
+      "minor": 0,
+      "patch": 0
+    }
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000/graphql",
+      "type": "string",
+      "description": "GraphQL endpoint URL"
+    },
+    {
+      "key": "testCellLineId",
+      "value": "CL_001",
+      "type": "string",
+      "description": "Test cell line ID for parameterized queries"
+    },
+    {
+      "key": "testParticipantId", 
+      "value": "PT_001",
+      "type": "string",
+      "description": "Test participant ID for parameterized queries"
+    },
+    {
+      "key": "testSampleId",
+      "value": "SA_001", 
+      "type": "string",
+      "description": "Test sample ID for parameterized queries"
+    },
+    {
+      "key": "testStudyId",
+      "value": "ST_001",
+      "type": "string", 
+      "description": "Test study ID for parameterized queries"
+    },
+    {
+      "key": "maxResponseTime",
+      "value": "5000",
+      "type": "string",
+      "description": "Maximum acceptable response time in milliseconds"
+    },
+    {
+      "key": "testRunTimestamp",
+      "value": "",
+      "type": "string",
+      "description": "Timestamp when test run started"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level pre-request script",
+          "// Set test run timestamp",
+          "if (!pm.collectionVariables.get('testRunTimestamp')) {",
+          "    pm.collectionVariables.set('testRunTimestamp', new Date().toISOString());",
+          "}",
+          "",
+          "// Log the request being made",
+          "console.log(`Making request to: ${pm.request.url}`);",
+          "console.log(`Request method: ${pm.request.method}`);",
+          "",
+          "// Set common headers if needed",
+          "// pm.request.headers.add({key: 'Authorization', value: 'Bearer ' + pm.environment.get('authToken')});"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript", 
+        "exec": [
+          "// Collection-level test script (runs after each request)",
+          "// This runs after individual request tests",
+          "",
+          "// Log test results",
+          "const testResults = pm.response.json();",
+          "if (testResults.errors) {",
+          "    console.log('GraphQL Errors found:', JSON.stringify(testResults.errors, null, 2));",
+          "}",
+          "",
+          "// Track API health metrics",
+          "if (!pm.collectionVariables.get('totalRequests')) {",
+          "    pm.collectionVariables.set('totalRequests', 0);",
+          "    pm.collectionVariables.set('successfulRequests', 0);",
+          "    pm.collectionVariables.set('errorRequests', 0);",
+          "}",
+          "",
+          "let totalRequests = parseInt(pm.collectionVariables.get('totalRequests'));",
+          "let successfulRequests = parseInt(pm.collectionVariables.get('successfulRequests'));",
+          "let errorRequests = parseInt(pm.collectionVariables.get('errorRequests'));",
+          "",
+          "totalRequests++;",
+          "pm.collectionVariables.set('totalRequests', totalRequests);",
+          "",
+          "if (pm.response.code === 200 && !testResults.errors) {",
+          "    successfulRequests++;",
+          "    pm.collectionVariables.set('successfulRequests', successfulRequests);",
+          "} else {",
+          "    errorRequests++;", 
+          "    pm.collectionVariables.set('errorRequests', errorRequests);",
+          "}",
+          "",
+          "// Calculate success rate",
+          "const successRate = (successfulRequests / totalRequests) * 100;",
+          "pm.collectionVariables.set('successRate', successRate.toFixed(2));",
+          "",
+          "console.log(`API Health: ${successfulRequests}/${totalRequests} successful (${successRate.toFixed(2)}%)`);"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Cell Line Queries",
+      "item": [
+        {
+          "name": "Get All Cell Lines",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllCellLines {\\n  cellLines {\\n    cell_line_id\\n    source\\n    cell_line_passage_number\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Check response status",
+                  "pm.test('Response status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Test 2: Check response time",
+                  "pm.test('Response time is less than 5000ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});",
+                  "",
+                  "// Test 3: Check response has data",
+                  "pm.test('Response contains data', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.have.property('data');",
+                  "});",
+                  "",
+                  "// Test 4: Check no GraphQL errors",
+                  "pm.test('No GraphQL errors', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.not.have.property('errors');",
+                  "});",
+                  "",
+                  "// Test 5: Check cellLines array structure",
+                  "pm.test('cellLines is an array', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.data.cellLines).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Test 6: Validate cell line object structure (if data exists)",
+                  "pm.test('Cell line objects have required fields', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.data.cellLines.length > 0) {",
+                  "        const cellLine = responseJson.data.cellLines[0];",
+                  "        pm.expect(cellLine).to.have.property('cell_line_id');",
+                  "        pm.expect(cellLine).to.have.property('id');",
+                  "    }",
+                  "});",
+                  "",
+                  "// Test 7: Set collection variable with count",
+                  "const responseJson = pm.response.json();",
+                  "if (responseJson.data && responseJson.data.cellLines) {",
+                  "    pm.collectionVariables.set('cellLinesCount', responseJson.data.cellLines.length);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Cell Lines With Relations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetCellLinesWithRelations {\\n  cellLines {\\n    cell_line_id\\n    source\\n    cell_line_passage_number\\n    id\\n    studies {\\n      study_id\\n      study_name\\n      study_acronym\\n    }\\n    samples {\\n      sample_id\\n      anatomic_site\\n      sample_description\\n    }\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Basic response validation",
+                  "pm.test('Response status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('No GraphQL errors', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.not.have.property('errors');",
+                  "});",
+                  "",
+                  "// Test 2: Relationship validation",
+                  "pm.test('Cell lines have relationship fields', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.data.cellLines.length > 0) {",
+                  "        const cellLine = responseJson.data.cellLines[0];",
+                  "        pm.expect(cellLine).to.have.property('studies');",
+                  "        pm.expect(cellLine).to.have.property('samples');",
+                  "        pm.expect(cellLine.studies).to.be.an('array');",
+                  "        pm.expect(cellLine.samples).to.be.an('array');",
+                  "    }",
+                  "});",
+                  "",
+                  "// Test 3: Study relationship structure",
+                  "pm.test('Studies have required fields', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    responseJson.data.cellLines.forEach(cellLine => {",
+                  "        cellLine.studies.forEach(study => {",
+                  "            pm.expect(study).to.have.property('study_id');",
+                  "            pm.expect(study).to.have.property('study_name');",
+                  "        });",
+                  "    });",
+                  "});",
+                  "",
+                  "// Test 4: Sample relationship structure",
+                  "pm.test('Samples have required fields', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    responseJson.data.cellLines.forEach(cellLine => {",
+                  "        cellLine.samples.forEach(sample => {",
+                  "            pm.expect(sample).to.have.property('sample_id');",
+                  "            pm.expect(sample).to.have.property('anatomic_site');",
+                  "        });",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clinical Measure File Queries",
+      "item": [
+        {
+          "name": "Get All Clinical Measure Files",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllClinicalMeasureFiles {\\n  clinicalMeasureFiles {\\n    clinical_measure_file_id\\n    file_name\\n    data_category\\n    file_type\\n    file_size\\n    md5sum\\n    file_access\\n    id\\n    crdc_id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Clinical Measure Files With Relations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetClinicalMeasureFilesWithRelations {\\n  clinicalMeasureFiles {\\n    clinical_measure_file_id\\n    file_name\\n    data_category\\n    file_type\\n    file_size\\n    studies {\\n      study_id\\n      study_name\\n    }\\n    participants {\\n      participant_id\\n      race\\n      sex_at_birth\\n    }\\n    samples {\\n      sample_id\\n      anatomic_site\\n    }\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Participant Queries",
+      "item": [
+        {
+          "name": "Get All Participants",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllParticipants {\\n  participants {\\n    participant_id\\n    race\\n    sex_at_birth\\n    id\\n    crdc_id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Basic response validation",
+                  "pm.test('Response status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('No GraphQL errors', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.not.have.property('errors');",
+                  "});",
+                  "",
+                  "// Test 2: Data validation",
+                  "pm.test('Participants data structure is valid', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson.data.participants).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Test 3: Required fields validation",
+                  "pm.test('Participants have required fields', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.data.participants.length > 0) {",
+                  "        const participant = responseJson.data.participants[0];",
+                  "        pm.expect(participant).to.have.property('participant_id');",
+                  "        pm.expect(participant).to.have.property('id');",
+                  "    }",
+                  "});",
+                  "",
+                  "// Test 4: Data type validation",
+                  "pm.test('Participant fields have correct data types', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    responseJson.data.participants.forEach(participant => {",
+                  "        if (participant.participant_id !== null) {",
+                  "            pm.expect(participant.participant_id).to.be.a('string');",
+                  "        }",
+                  "        if (participant.race !== null) {",
+                  "            pm.expect(participant.race).to.be.a('string');",
+                  "        }",
+                  "        if (participant.sex_at_birth !== null) {",
+                  "            pm.expect(participant.sex_at_birth).to.be.a('string');",
+                  "        }",
+                  "    });",
+                  "});",
+                  "",
+                  "// Test 5: Set collection variables for other tests",
+                  "const responseJson = pm.response.json();",
+                  "if (responseJson.data && responseJson.data.participants.length > 0) {",
+                  "    pm.collectionVariables.set('participantCount', responseJson.data.participants.length);",
+                  "    pm.collectionVariables.set('firstParticipantId', responseJson.data.participants[0].participant_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Participants With All Relations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetParticipantsWithAllRelations {\\n  participants {\\n    participant_id\\n    race\\n    sex_at_birth\\n    consent_groups {\\n      consent_group_id\\n      consent_group_name\\n    }\\n    diagnosis {\\n      diagnosis_id\\n      diagnosis\\n    }\\n    samples {\\n      sample_id\\n      anatomic_site\\n    }\\n    treatments {\\n      treatment_id\\n      treatment_type\\n    }\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sample Queries",
+      "item": [
+        {
+          "name": "Get All Samples",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllSamples {\\n  samples {\\n    sample_id\\n    anatomic_site\\n    participant_age_at_collection\\n    sample_tumor_status\\n    sample_description\\n    percent_tumor\\n    id\\n    crdc_id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Samples With All Relations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetSamplesWithAllRelations {\\n  samples {\\n    sample_id\\n    anatomic_site\\n    sample_tumor_status\\n    participants {\\n      participant_id\\n      race\\n      sex_at_birth\\n    }\\n    cell_lines {\\n      cell_line_id\\n      source\\n    }\\n    diagnosis {\\n      diagnosis_id\\n      diagnosis\\n    }\\n    sequencing_files {\\n      sequencing_file_id\\n      platform\\n    }\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Study Queries",
+      "item": [
+        {
+          "name": "Get All Studies",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllStudies {\\n  studies {\\n    study_id\\n    dbgap_accession\\n    study_name\\n    study_acronym\\n    study_description\\n    study_status\\n    experimental_strategy_and_data_subtype\\n    id\\n    crdc_id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Studies With All Relations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetStudiesWithAllRelations {\\n  studies {\\n    study_id\\n    study_name\\n    study_acronym\\n    cell_lines {\\n      cell_line_id\\n      source\\n    }\\n    publications {\\n      publication_id\\n      pubmed_id\\n    }\\n    study_admins {\\n      study_admin_id\\n      organism_species\\n    }\\n    study_personnels {\\n      study_personnel_id\\n      personnel_name\\n      institution\\n    }\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Diagnosis Queries",
+      "item": [
+        {
+          "name": "Get All Diagnoses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllDiagnoses {\\n  diagnoses {\\n    diagnosis_id\\n    submitted_diagnosis\\n    diagnosis\\n    diagnosis_category\\n    age_at_diagnosis\\n    tumor_grade\\n    year_of_diagnosis\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Diagnoses With Relations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetDiagnosesWithRelations {\\n  diagnoses {\\n    diagnosis_id\\n    diagnosis\\n    diagnosis_category\\n    age_at_diagnosis\\n    participants {\\n      participant_id\\n      race\\n      sex_at_birth\\n    }\\n    samples {\\n      sample_id\\n      anatomic_site\\n    }\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "File Queries",
+      "item": [
+        {
+          "name": "Get All Sequencing Files",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllSequencingFiles {\\n  sequencingFiles {\\n    sequencing_file_id\\n    file_name\\n    data_category\\n    file_type\\n    file_size\\n    library_strategy\\n    platform\\n    instrument_model\\n    number_of_reads\\n    coverage\\n    id\\n    crdc_id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Pathology Files",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllPathologyFiles {\\n  pathologyFiles {\\n    pathology_file_id\\n    file_name\\n    data_category\\n    file_type\\n    file_size\\n    image_modality\\n    magnification\\n    staining_method\\n    id\\n    crdc_id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Radiology Files",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllRadiologyFiles {\\n  radiologyFiles {\\n    radiology_file_id\\n    file_name\\n    data_category\\n    file_type\\n    file_size\\n    anatomic_site\\n    participant_age_at_imaging\\n    image_modality\\n    scanner_manufacturer\\n    id\\n    crdc_id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Generic Files",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllGenericFiles {\\n  genericFiles {\\n    generic_file_id\\n    file_name\\n    data_category\\n    file_type\\n    file_description\\n    file_size\\n    md5sum\\n    file_access\\n    id\\n    crdc_id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Treatment and Response Queries",
+      "item": [
+        {
+          "name": "Get All Treatments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllTreatments {\\n  treatments {\\n    treatment_id\\n    age_at_treatment_start\\n    age_at_treatment_end\\n    treatment_type\\n    treatment_agent\\n    dose\\n    dose_unit\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Treatment Responses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllTreatmentResponses {\\n  treatmentResponses {\\n    treatment_response_id\\n    response\\n    age_at_response\\n    response_category\\n    response_system\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Survivals",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllSurvivals {\\n  survivals {\\n    survival_id\\n    last_known_survival_status\\n    age_at_last_known_survival_status\\n    first_event\\n    event_free_survival_status\\n    cause_of_death\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analysis Queries",
+      "item": [
+        {
+          "name": "Get All Genetic Analyses",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllGeneticAnalyses {\\n  geneticAnalyses {\\n    genetic_analysis_id\\n    age_at_genetic_analysis\\n    test\\n    method\\n    result\\n    gene_symbol\\n    alteration\\n    alteration_type\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Laboratory Tests",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllLaboratoryTests {\\n  laboratoryTests {\\n    laboratory_test_id\\n    age_at_laboratory_test\\n    laboratory_test_method\\n    laboratory_test_name\\n    specimen\\n    test_result_text\\n    test_result_numeric\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "PDX and Cell Line Queries",
+      "item": [
+        {
+          "name": "Get All PDX Models",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllPdxModels {\\n  pdxModels {\\n    pdx_id\\n    model_id\\n    mouse_strain\\n    implantation_type\\n    implantation_site\\n    passage_number\\n    validation_technique\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get PDX Models With Relations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetPdxModelsWithRelations {\\n  pdxModels {\\n    pdx_id\\n    model_id\\n    mouse_strain\\n    studies {\\n      study_id\\n      study_name\\n    }\\n    samples {\\n      sample_id\\n      anatomic_site\\n    }\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Complex Queries",
+      "item": [
+        {
+          "name": "Get Comprehensive Study Info",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetComprehensiveStudyInfo($studyId: String!) {\\n  study(study_id: $studyId) {\\n    study_id\\n    study_name\\n    study_description\\n    study_status\\n    publications {\\n      publication_id\\n      pubmed_id\\n    }\\n    study_personnels {\\n      personnel_name\\n      personnel_type\\n      institution\\n    }\\n    study_admins {\\n      organism_species\\n      number_of_participants\\n      number_of_samples\\n    }\\n    cell_lines {\\n      cell_line_id\\n      source\\n      samples {\\n        sample_id\\n        anatomic_site\\n      }\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"studyId\": \"example_study_id\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test 1: Response validation",
+                  "pm.test('Response status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('No GraphQL errors', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.expect(responseJson).to.not.have.property('errors');",
+                  "});",
+                  "",
+                  "// Test 2: Complex relationship validation",
+                  "pm.test('Study has all relationship arrays', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.data.study !== null) {",
+                  "        const study = responseJson.data.study;",
+                  "        pm.expect(study).to.have.property('publications');",
+                  "        pm.expect(study).to.have.property('study_personnels');",
+                  "        pm.expect(study).to.have.property('study_admins');",
+                  "        pm.expect(study).to.have.property('cell_lines');",
+                  "        ",
+                  "        pm.expect(study.publications).to.be.an('array');",
+                  "        pm.expect(study.study_personnels).to.be.an('array');",
+                  "        pm.expect(study.study_admins).to.be.an('array');",
+                  "        pm.expect(study.cell_lines).to.be.an('array');",
+                  "    }",
+                  "});",
+                  "",
+                  "// Test 3: Nested relationship validation",
+                  "pm.test('Cell lines have nested samples', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.data.study && responseJson.data.study.cell_lines) {",
+                  "        responseJson.data.study.cell_lines.forEach(cellLine => {",
+                  "            pm.expect(cellLine).to.have.property('samples');",
+                  "            pm.expect(cellLine.samples).to.be.an('array');",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "// Test 4: Data completeness validation",
+                  "pm.test('Study admin has numeric fields', function () {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.data.study && responseJson.data.study.study_admins) {",
+                  "        responseJson.data.study.study_admins.forEach(admin => {",
+                  "            if (admin.number_of_participants !== null) {",
+                  "                pm.expect(admin.number_of_participants).to.be.a('number');",
+                  "            }",
+                  "            if (admin.number_of_samples !== null) {",
+                  "                pm.expect(admin.number_of_samples).to.be.a('number');",
+                  "            }",
+                  "        });",
+                  "    }",
+                  "});",
+                  "",
+                  "// Test 5: Performance test",
+                  "pm.test('Complex query response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Participant Medical Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetParticipantMedicalProfile($participantId: String!) {\\n  participant(participant_id: $participantId) {\\n    participant_id\\n    race\\n    sex_at_birth\\n    diagnosis {\\n      diagnosis_id\\n      diagnosis\\n      age_at_diagnosis\\n    }\\n    treatments {\\n      treatment_id\\n      treatment_type\\n      treatment_agent\\n    }\\n    treatment_responses {\\n      treatment_response_id\\n      response\\n      age_at_response\\n    }\\n    survivals {\\n      survival_id\\n      last_known_survival_status\\n      age_at_last_known_survival_status\\n    }\\n    exposures {\\n      exposure_id\\n      tobacco_smoking_status\\n      pack_years_smoked\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"participantId\": \"example_participant_id\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Sample With All Files",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetSampleWithFiles($sampleId: String!) {\\n  sample(sample_id: $sampleId) {\\n    sample_id\\n    anatomic_site\\n    sample_tumor_status\\n    sample_description\\n    sequencing_files {\\n      sequencing_file_id\\n      file_name\\n      platform\\n      library_strategy\\n    }\\n    pathology_files {\\n      pathology_file_id\\n      file_name\\n      image_modality\\n      staining_method\\n    }\\n    cytogenomic_files {\\n      cytogenomic_file_id\\n      file_name\\n      cytogenomic_platform\\n    }\\n    methylation_array_files {\\n      methylation_array_file_id\\n      file_name\\n      methylation_platform\\n    }\\n  }\\n}\",\n  \"variables\": {\n    \"sampleId\": \"example_sample_id\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Metadata and Administrative Queries",
+      "item": [
+        {
+          "name": "Get All Publications",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllPublications {\\n  publications {\\n    publication_id\\n    pubmed_id\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Study Personnel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllStudyPersonnel {\\n  studyPersonnels {\\n    study_personnel_id\\n    personnel_name\\n    personnel_type\\n    email_address\\n    institution\\n    orcid\\n    id\\n    crdc_id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Study Fundings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllStudyFundings {\\n  studyFundings {\\n    study_funding_id\\n    funding_agency\\n    grant_id\\n    funding_source_program_name\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Synonyms",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query GetAllSynonyms {\\n  synonyms {\\n    synonym_id\\n    repository_of_synonym_id\\n    associated_id\\n    domain_description\\n    domain_category\\n    data_location\\n    id\\n  }\\n}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
