@@ -28,7 +28,12 @@ flowchart TD
 
 ```
 
+## Data Model 
 
+Resources:
+
+- Repository: [ccdi-dcc-model](https://github.com/CBIIT/ccdi-dcc-model)
+- Interactive Navigator: [Data Model Navigator](https://cbiit.github.io/crdc-data-model-navigator/?config=https://raw.githubusercontent.com/CBIIT/ccdi-dcc-model/refs/heads/main/)
 
 ## Example Simple Query
 ```graphql
