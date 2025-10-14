@@ -13,7 +13,7 @@ type cell_line {
   id: String
   study_of_cell_line: [study!]! @relationship(type: "of_cell_line", direction: OUT)
   sample_of_cell_line: [sample!]! @relationship(type: "of_cell_line", direction: OUT)
-  cell_line_of_sample: [sample!]! @relationship(type: "of_sample", direction: IN)
+  sample: [sample!]! @relationship(type: "of_sample", direction: IN)
 }
 
 type clinical_measure_file {
@@ -35,9 +35,9 @@ type clinical_measure_file {
   participant_list: String
   id: String
   crdc_id: String
-  study_of_clinical_measure_file: [study!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
-  participant_of_clinical_measure_file: [participant!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
-  sample_of_clinical_measure_file: [sample!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
+  study: [study!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
 }
 
 type consent_group {
@@ -45,8 +45,8 @@ type consent_group {
   consent_group_name: String
   consent_group_suffix: String
   id: String
-  study_of_consent_group: [study!]! @relationship(type: "of_consent_group", direction: OUT)
-  consent_group_of_participant: [participant!]! @relationship(type: "of_participant", direction: IN)
+  study: [study!]! @relationship(type: "of_consent_group", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_participant", direction: IN)
 }
 
 type cytogenomic_file {
@@ -66,7 +66,7 @@ type cytogenomic_file {
   cytogenomic_platform: String
   id: String
   crdc_id: String
-  sample_of_cytogenomic_file: [sample!]! @relationship(type: "of_cytogenomic_file", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_cytogenomic_file", direction: OUT)
 }
 
 type diagnosis {
@@ -92,8 +92,8 @@ type diagnosis {
   year_of_diagnosis: String
   laterality: String
   id: String
-  participant_of_diagnosis: [participant!]! @relationship(type: "of_diagnosis", direction: OUT)
-  sample_of_diagnosis: [sample!]! @relationship(type: "of_diagnosis", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_diagnosis", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_diagnosis", direction: OUT)
 }
 
 type exposure {
@@ -119,7 +119,7 @@ type exposure {
   type_of_smoke_exposure: String
   type_of_tobacco_used: String
   id: String
-  participant_of_exposure: [participant!]! @relationship(type: "of_exposure", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_exposure", direction: OUT)
 }
 
 type family_relationship {
@@ -127,7 +127,7 @@ type family_relationship {
   relationship: String
   family_id: String
   id: String
-  participant_of_family_relationship: [participant!]! @relationship(type: "of_family_relationship", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_family_relationship", direction: OUT)
 }
 
 type genetic_analysis {
@@ -162,8 +162,8 @@ type genetic_analysis {
   translocation_partner_chromosome: String
   translocation_partner_cytoband: String
   id: String
-  sample_of_genetic_analysis: [sample!]! @relationship(type: "of_genetic_analysis", direction: OUT)
-  participant_of_genetic_analysis: [participant!]! @relationship(type: "of_genetic_analysis", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_genetic_analysis", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_genetic_analysis", direction: OUT)
 }
 
 type medical_history {
@@ -171,7 +171,7 @@ type medical_history {
   medical_history_category: String
   medical_history_condition: String
   id: String
-  participant_of_medical_history: [participant!]! @relationship(type: "of_medical_history", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_medical_history", direction: OUT)
 }
 
 type laboratory_test {
@@ -186,8 +186,8 @@ type laboratory_test {
   test_result_unit: String
   sensitivity: Float
   id: String
-  participant_of_laboratory_test: [participant!]! @relationship(type: "of_laboratory_test", direction: OUT)
-  sample_of_laboratory_test: [sample!]! @relationship(type: "of_laboratory_test", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_laboratory_test", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_laboratory_test", direction: OUT)
 }
 
 type methylation_array_file {
@@ -208,7 +208,7 @@ type methylation_array_file {
   reporter_label: String
   id: String
   crdc_id: String
-  sample_of_methylation_array_file: [sample!]! @relationship(type: "of_methylation_array_file", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_methylation_array_file", direction: OUT)
 }
 
 type participant {
@@ -217,21 +217,21 @@ type participant {
   sex_at_birth: String
   id: String
   crdc_id: String
-  consent_group_of_participant: [consent_group!]! @relationship(type: "of_participant", direction: OUT)
-  participant_of_clinical_measure_file: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
-  participant_of_diagnosis: [diagnosis!]! @relationship(type: "of_diagnosis", direction: IN)
-  participant_of_exposure: [exposure!]! @relationship(type: "of_exposure", direction: IN)
-  participant_of_family_relationship: [family_relationship!]! @relationship(type: "of_family_relationship", direction: IN)
-  participant_of_generic_file: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
-  participant_of_genetic_analysis: [genetic_analysis!]! @relationship(type: "of_genetic_analysis", direction: IN)
-  participant_of_laboratory_test: [laboratory_test!]! @relationship(type: "of_laboratory_test", direction: IN)
-  participant_of_medical_history: [medical_history!]! @relationship(type: "of_medical_history", direction: IN)
-  participant_of_radiology_file: [radiology_file!]! @relationship(type: "of_radiology_file", direction: IN)
-  participant_of_sample: [sample!]! @relationship(type: "of_sample", direction: IN)
-  participant_of_survival: [survival!]! @relationship(type: "of_survival", direction: IN)
-  participant_of_synonym: [synonym!]! @relationship(type: "of_synonym", direction: IN)
-  participant_of_treatment: [treatment!]! @relationship(type: "of_treatment", direction: IN)
-  participant_of_treatment_response: [treatment_response!]! @relationship(type: "of_treatment_response", direction: IN)
+  consent_group: [consent_group!]! @relationship(type: "of_participant", direction: OUT)
+  clinical_measure_file: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
+  diagnosis: [diagnosis!]! @relationship(type: "of_diagnosis", direction: IN)
+  exposure: [exposure!]! @relationship(type: "of_exposure", direction: IN)
+  family_relationship: [family_relationship!]! @relationship(type: "of_family_relationship", direction: IN)
+  generic_file: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
+  genetic_analysis: [genetic_analysis!]! @relationship(type: "of_genetic_analysis", direction: IN)
+  laboratory_test: [laboratory_test!]! @relationship(type: "of_laboratory_test", direction: IN)
+  medical_history: [medical_history!]! @relationship(type: "of_medical_history", direction: IN)
+  radiology_file: [radiology_file!]! @relationship(type: "of_radiology_file", direction: IN)
+  sample: [sample!]! @relationship(type: "of_sample", direction: IN)
+  survival: [survival!]! @relationship(type: "of_survival", direction: IN)
+  synonym: [synonym!]! @relationship(type: "of_synonym", direction: IN)
+  treatment: [treatment!]! @relationship(type: "of_treatment", direction: IN)
+  treatment_response: [treatment_response!]! @relationship(type: "of_treatment_response", direction: IN)
 }
 
 type pathology_file {
@@ -257,7 +257,7 @@ type pathology_file {
   slim_url: String
   id: String
   crdc_id: String
-  sample_of_pathology_file: [sample!]! @relationship(type: "of_pathology_file", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_pathology_file", direction: OUT)
 }
 
 type pdx {
@@ -273,7 +273,7 @@ type pdx {
   passages_tested: String
   validation_technique: String
   id: String
-  study_of_pdx: [study!]! @relationship(type: "of_pdx", direction: OUT)
+  study: [study!]! @relationship(type: "of_pdx", direction: OUT)
   sample_of_pdx: [sample!]! @relationship(type: "of_pdx", direction: OUT)
   pdx_of_sample: [sample!]! @relationship(type: "of_sample", direction: IN)
 }
@@ -282,7 +282,7 @@ type publication {
   publication_id: String
   pubmed_id: String
   id: String
-  study_of_publication: [study!]! @relationship(type: "of_publication", direction: OUT)
+  study: [study!]! @relationship(type: "of_publication", direction: OUT)
 }
 
 type radiology_file {
@@ -332,7 +332,7 @@ type radiology_file {
   complexImageComponentCode: String
   id: String
   crdc_id: String
-  participant_of_radiology_file: [participant!]! @relationship(type: "of_radiology_file", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_radiology_file", direction: OUT)
 }
 
 type generic_file {
@@ -351,9 +351,9 @@ type generic_file {
   dcf_indexd_guid: String
   id: String
   crdc_id: String
-  study_of_generic_file: [study!]! @relationship(type: "of_generic_file", direction: OUT)
-  participant_of_generic_file: [participant!]! @relationship(type: "of_generic_file", direction: OUT)
-  sample_of_generic_file: [sample!]! @relationship(type: "of_generic_file", direction: OUT)
+  study: [study!]! @relationship(type: "of_generic_file", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_generic_file", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_generic_file", direction: OUT)
 }
 
 type sample {
@@ -368,21 +368,21 @@ type sample {
   laterality: String
   id: String
   crdc_id: String
-  participant_of_sample: [participant!]! @relationship(type: "of_sample", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_sample", direction: OUT)
   pdx_of_sample: [pdx!]! @relationship(type: "of_sample", direction: OUT)
   cell_line_of_sample: [cell_line!]! @relationship(type: "of_sample", direction: OUT)
   sample_of_cell_line: [cell_line!]! @relationship(type: "of_cell_line", direction: IN)
-  sample_of_clinical_measure_file: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
-  sample_of_cytogenomic_file: [cytogenomic_file!]! @relationship(type: "of_cytogenomic_file", direction: IN)
-  sample_of_diagnosis: [diagnosis!]! @relationship(type: "of_diagnosis", direction: IN)
-  sample_of_generic_file: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
-  sample_of_genetic_analysis: [genetic_analysis!]! @relationship(type: "of_genetic_analysis", direction: IN)
-  sample_of_laboratory_test: [laboratory_test!]! @relationship(type: "of_laboratory_test", direction: IN)
-  sample_of_methylation_array_file: [methylation_array_file!]! @relationship(type: "of_methylation_array_file", direction: IN)
-  sample_of_pathology_file: [pathology_file!]! @relationship(type: "of_pathology_file", direction: IN)
+  clinical_measure_file: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
+  cytogenomic_file: [cytogenomic_file!]! @relationship(type: "of_cytogenomic_file", direction: IN)
+  diagnosis: [diagnosis!]! @relationship(type: "of_diagnosis", direction: IN)
+  generic_file: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
+  genetic_analysis: [genetic_analysis!]! @relationship(type: "of_genetic_analysis", direction: IN)
+  laboratory_test: [laboratory_test!]! @relationship(type: "of_laboratory_test", direction: IN)
+  methylation_array_file: [methylation_array_file!]! @relationship(type: "of_methylation_array_file", direction: IN)
+  pathology_file: [pathology_file!]! @relationship(type: "of_pathology_file", direction: IN)
   sample_of_pdx: [pdx!]! @relationship(type: "of_pdx", direction: IN)
-  sample_of_sequencing_file: [sequencing_file!]! @relationship(type: "of_sequencing_file", direction: IN)
-  sample_of_synonym: [synonym!]! @relationship(type: "of_synonym", direction: IN)
+  sequencing_file: [sequencing_file!]! @relationship(type: "of_sequencing_file", direction: IN)
+  synonym: [synonym!]! @relationship(type: "of_synonym", direction: IN)
 }
 
 type sequencing_file {
@@ -437,7 +437,7 @@ type sequencing_file {
   UMI_barcode_size: String
   id: String
   crdc_id: String
-  sample_of_sequencing_file: [sample!]! @relationship(type: "of_sequencing_file", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_sequencing_file", direction: OUT)
 }
 
 type study {
@@ -457,17 +457,17 @@ type study {
   release_status: String
   id: String
   crdc_id: String
-  study_of_cell_line: [cell_line!]! @relationship(type: "of_cell_line", direction: IN)
-  study_of_clinical_measure_file: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
-  study_of_consent_group: [consent_group!]! @relationship(type: "of_consent_group", direction: IN)
-  study_of_generic_file: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
-  study_of_pdx: [pdx!]! @relationship(type: "of_pdx", direction: IN)
-  study_of_publication: [publication!]! @relationship(type: "of_publication", direction: IN)
-  study_of_study_admin: [study_admin!]! @relationship(type: "of_study_admin", direction: IN)
-  study_of_study_arm: [study_arm!]! @relationship(type: "of_study_arm", direction: IN)
-  study_of_study_funding: [study_funding!]! @relationship(type: "of_study_funding", direction: IN)
-  study_of_study_personnel: [study_personnel!]! @relationship(type: "of_study_personnel", direction: IN)
-  study_of_synonym: [synonym!]! @relationship(type: "of_synonym", direction: IN)
+  cell_line: [cell_line!]! @relationship(type: "of_cell_line", direction: IN)
+  clinical_measure_file: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
+  consent_group: [consent_group!]! @relationship(type: "of_consent_group", direction: IN)
+  generic_file: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
+  pdx: [pdx!]! @relationship(type: "of_pdx", direction: IN)
+  publication: [publication!]! @relationship(type: "of_publication", direction: IN)
+  study_admin: [study_admin!]! @relationship(type: "of_study_admin", direction: IN)
+  study_arm: [study_arm!]! @relationship(type: "of_study_arm", direction: IN)
+  study_funding: [study_funding!]! @relationship(type: "of_study_funding", direction: IN)
+  study_personnel: [study_personnel!]! @relationship(type: "of_study_personnel", direction: IN)
+  synonym: [synonym!]! @relationship(type: "of_synonym", direction: IN)
 }
 
 type study_admin {
@@ -478,7 +478,7 @@ type study_admin {
   number_of_participants: Int
   number_of_samples: Int
   id: String
-  study_of_study_admin: [study!]! @relationship(type: "of_study_admin", direction: OUT)
+  study: [study!]! @relationship(type: "of_study_admin", direction: OUT)
 }
 
 type study_arm {
@@ -487,7 +487,7 @@ type study_arm {
   clinical_trial_identifier: String
   clinical_trial_repository: String
   id: String
-  study_of_study_arm: [study!]! @relationship(type: "of_study_arm", direction: OUT)
+  study: [study!]! @relationship(type: "of_study_arm", direction: OUT)
 }
 
 type study_funding {
@@ -496,7 +496,7 @@ type study_funding {
   grant_id: String
   funding_source_program_name: String
   id: String
-  study_of_study_funding: [study!]! @relationship(type: "of_study_funding", direction: OUT)
+  study: [study!]! @relationship(type: "of_study_funding", direction: OUT)
 }
 
 type study_personnel {
@@ -508,7 +508,7 @@ type study_personnel {
   orcid: String
   id: String
   crdc_id: String
-  study_of_study_personnel: [study!]! @relationship(type: "of_study_personnel", direction: OUT)
+  study: [study!]! @relationship(type: "of_study_personnel", direction: OUT)
 }
 
 type survival {
@@ -526,7 +526,7 @@ type survival {
   risk_factor: String
   cause_of_death: String
   id: String
-  participant_of_survival: [participant!]! @relationship(type: "of_survival", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_survival", direction: OUT)
 }
 
 type synonym {
@@ -537,9 +537,9 @@ type synonym {
   domain_category: String
   data_location: String
   id: String
-  study_of_synonym: [study!]! @relationship(type: "of_synonym", direction: OUT)
-  participant_of_synonym: [participant!]! @relationship(type: "of_synonym", direction: OUT)
-  sample_of_synonym: [sample!]! @relationship(type: "of_synonym", direction: OUT)
+  study: [study!]! @relationship(type: "of_synonym", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_synonym", direction: OUT)
+  sample: [sample!]! @relationship(type: "of_synonym", direction: OUT)
 }
 
 type treatment {
@@ -553,7 +553,7 @@ type treatment {
   dose_route: String
   dose_frequency: String
   id: String
-  participant_of_treatment: [participant!]! @relationship(type: "of_treatment", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_treatment", direction: OUT)
 }
 
 type treatment_response {
@@ -563,6 +563,6 @@ type treatment_response {
   response_category: String
   response_system: String
   id: String
-  participant_of_treatment_response: [participant!]! @relationship(type: "of_treatment_response", direction: OUT)
+  participant: [participant!]! @relationship(type: "of_treatment_response", direction: OUT)
 }
 
