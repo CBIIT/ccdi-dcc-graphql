@@ -6,7 +6,7 @@ A GraphQL API service for the Childhood Cancer Data Initiative (CCDI) Data Coord
 ## Features
 - **GraphQL API**: Auto-generated schema from graph database with custom resolvers
 - **Graph Database Integration**: Neo4j/Memgraph connectivity with relationship-based querying  
-- **Schema Generation**: Python utility to generate GraphQL schema from Memgraph JSON schema
+- **Schema Generation**: Python utilities to generate GraphQL schema from (a) Memgraph JSON, and (b) CCDI DCC MDF model YAML via the vendored Bento MDF/Meta libraries (`data-model-schema-graphql-mdf.py`)
 - **Biomedical Data Types**: Support for participants, samples, studies, diagnoses, treatments, and more
 - **Custom Queries**: Specialized aggregation queries for sample grouping and counting
 - **GraphQL Playground**: Interactive query interface for development and testing
@@ -109,8 +109,8 @@ docker run -p 9000:9000 -e DB_URI=bolt://your-db:7687 ccdi-dcc-graphql
 
 ## Schema Management
 
-####  From CCDI DCC Model YAML Files
-Generate GraphQL schema from CCDI DCC model definition files:
+### Option 1: From CCDI DCC Model YAML Files (Legacy Script)
+Generate GraphQL schema from CCDI DCC model definition files using the original, lightweight parser:
 
 ```bash
 # Prerequisites: Set up Python virtual environment and install dependencies
@@ -142,11 +142,70 @@ deactivate
 - Supports complex biomedical data model relationships
 - Includes field count aggregation types
 
-**Both tools:**
-- Convert node labels to GraphQL types
+### Option 2: Using Bento MDF / Meta Libraries (Preferred)
+`data-model-schema-graphql-mdf.py` leverages the vendored Bento MDF / Meta libraries (`external/ccdi-dcc-model/bento-mdf`) to fully parse, validate, and merge one or more MDF YAML model description files, then emits a deterministic Neo4j GraphQL–compatible SDL schema.
+
+#### Why this script?
+- Re-uses the canonical MDF parser/validator instead of maintaining custom YAML parsing logic
+- Merges multiple MDF YAML files in left→right order (later files can extend/override)
+- Deterministic relationship field naming; preserves duplicates with numeric suffixes
+- Best‑effort mapping from MDF value domains to GraphQL scalars (all fields nullable by default)
+- Produces stable output suited for version control diffs
+
+#### Prerequisites
+Python 3.8+ (the vendored libraries are included; no extra pip installs required for basic use). If you already created a virtual environment, just activate it—no additional dependencies should be necessary. If you prefer to install the libraries yourself rather than rely on the vendored copy, consult `external/ccdi-dcc-model/bento-mdf/python/pyproject.toml`.
+
+#### Basic Usage
+```bash
+python data-model-schema-graphql-mdf.py external/ccdi-dcc-model/model-desc/ccdi-dcc-model.yml > schema.graphql
+```
+
+#### Merging Multiple MDF Files
+You can supply multiple YAML files. They are read and merged in order (left to right):
+```bash
+python data-model-schema-graphql-mdf.py \
+  external/ccdi-dcc-model/model-desc/ccdi-dcc-model.yml \
+  external/ccdi-dcc-model/model-desc/ccdi-dcc-model-props.yml \
+  > schema.graphql
+```
+
+#### Output
+- Writes GraphQL SDL to stdout (redirect or pipe as needed)
+- Adds a `FieldCount` helper type
+- Generates one `type <Node>` per MDF node with property fields (nullable) and relationship fields annotated with `@relationship(type: "EDGE_HANDLE", direction: OUT|IN)`
+
+#### Value Domain Mapping (Summary)
+| MDF Domain | GraphQL |
+|------------|---------|
+| string / regexp / value_set | String |
+| integer / int | Int |
+| float / number / double | Float |
+| boolean / bool | Boolean |
+| list (primitive) | [MappedType] |
+| list (value_set) | [String] |
+| (unrecognized) | String |
+
+All list and scalar fields are nullable; list elements are also nullable. Adjust nullability post‑generation if your application requires stricter constraints.
+
+#### Comparison vs Legacy Script
+| Aspect | Legacy (`data-model-schema-graphql.py`) | MDF (`data-model-schema-graphql-mdf.py`) |
+|--------|----------------------------------------|------------------------------------------|
+| Parsing | Manual YAML traversal | Canonical MDF parser (`MDFReader`) |
+| Validation | Minimal | Full MDF validation |
+| Multiple Files | Two specific files | Arbitrary N YAML files (merge) |
+| Determinism | Basic | Stable deterministic field naming |
+| Extensibility | Harder | Leverages model object graph |
+
+#### Future Enhancements
+- Express composite keys as `@unique` or `@id` where appropriate
+- Optionally generate enum types for `value_set` domains
+- Configurable nullability & scalar overrides
+
+**Common Features (Both Scripts):**
+- Convert MDF / model node labels to GraphQL `type`s
 - Map properties to appropriate GraphQL field types  
 - Generate relationship fields with `@relationship` directives
-- Include custom query types for data aggregation
+- Provide a helper aggregation type (`FieldCount`)
 
 
 ## API Usage
@@ -256,7 +315,8 @@ query FilesForSample {
 ├── index.js                      # Main Apollo Server application
 ├── schema.graphql               # GraphQL type definitions
 ├── memgraph-schema-graphql.py   # Schema generation from Memgraph JSON
-├── data-model-schema-graphql.py # Schema generation from CCDI model YAML
+├── data-model-schema-graphql.py       # Legacy schema generation from CCDI model YAML
+├── data-model-schema-graphql-mdf.py   # Preferred schema generation using Bento MDF/Meta parser
 ├── package.json                 # Node.js dependencies
 ├── Dockerfile                   # Container configuration  
 ├── docker-compose.yml           # Multi-container setup
