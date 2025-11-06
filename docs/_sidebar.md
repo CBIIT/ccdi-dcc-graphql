@@ -3,5 +3,5 @@
   - [Quick Start](getting-started.md)
 - Usage
   - [Basic Queries](basic-usage.md)
-- Access Data Throught Claude
+- Access Data Through Claude
   - [MCP](client-integration-claude.md)
