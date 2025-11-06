@@ -8,7 +8,7 @@ query FirstParticipants { participants(options: { limit: 5 }) { participant_id r
 ## Filtering
 ```graphql
 query BrainSamples {
-  samples(where: { anatomic_site: "C64.9 : Kidney, NOS"" }, options: { limit: 5 }) {
+  samples(where: { anatomic_site: "C64.9 : Kidney, NOS" }, options: { limit: 5 }) {
     sample_id 
     anatomic_site 
   }
