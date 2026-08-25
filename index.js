@@ -9,14 +9,17 @@ import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-p
 } from "@apollo/server/plugin/landingPage/default";
 import dotenv from 'dotenv';
 import { readFileSync } from 'fs';
+import { getDatabaseConfig, getServerConfig } from './config.js';
 
 dotenv.config();
 
 const typeDefs = readFileSync('./schema.graphql', 'utf8');
 
+const databaseConfig = getDatabaseConfig();
+const serverConfig = getServerConfig();
 const driver = neo4j.driver(
-    process.env.DB_URI || "bolt://localhost:7687",
-    neo4j.auth.basic(process.env.DB_USERNAME || "", process.env.DB_PASSWORD || "")
+    databaseConfig.uri,
+    neo4j.auth.basic(databaseConfig.username, databaseConfig.password)
 );
  
 
@@ -50,7 +53,7 @@ const { url } = await startStandaloneServer(server, {
         sessionConfig: {database: "memgraph"},
         driver: driver  // Pass driver to context for custom resolvers
     }),
-    listen: { port: 9000 , host: "0.0.0.0"},
+    listen: serverConfig,
 });
  
 console.log(`🚀 Server ready at ${url}`);

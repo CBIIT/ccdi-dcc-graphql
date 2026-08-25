@@ -1,6 +1,9 @@
 # Use Node.js Alpine image for smaller size and better security
 FROM node:20-alpine
 
+# Apply the latest security updates from the Alpine repository.
+RUN apk upgrade --no-cache
+
 # Set working directory
 WORKDIR /app
 

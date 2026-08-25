@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "container-security-review": {
+      "source": "essentialsoft/agentskills",
+      "sourceType": "github",
+      "skillPath": "skills/container-security-review/SKILL.md",
+      "computedHash": "79d88368666cfe6b54d6f58f897dc0fb688ab0e1c23b008ec839b6abb4639818"
+    },
+    "dockerfile-twistlock-zero-high": {
+      "source": "essentialsoft/agentskills",
+      "sourceType": "github",
+      "skillPath": "skills/dockerfile-twistlock-zero-high/SKILL.md",
+      "computedHash": "8df20a60af38021ebbd78d6ff3e3edc0d53e2307fb225c00cc7eb457905f688e"
+    }
+  }
+}
