@@ -16,8 +16,6 @@ schema {
   query: Query
 }
 
-scalar BigInt
-scalar DateTime
 scalar JSON
 
 enum MemgraphDirection {
@@ -954,4 +952,3 @@ type TreatmentSurgeryOfTreatmentSurgeryParticipantEdge @memgraphEdge(type: "of_t
   to: Participant!
   created: DateTime
 }
-
