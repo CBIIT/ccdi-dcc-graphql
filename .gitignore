@@ -154,3 +154,5 @@ lib/
 
 # python env
 venv
+
+.agents/
