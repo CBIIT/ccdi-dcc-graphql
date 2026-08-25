@@ -1,651 +1,957 @@
-#graphql
+# Generated from Memgraph Lab exports.
+#
+# Mapping choices:
+# - Memgraph labels and property names are preserved through directives and snake_case fields.
+# - All observed node properties are nullable because Memgraph reported mandatory=false.
+# - Memgraph Int maps to BigInt to avoid GraphQL Int's signed 32-bit limit.
+# - List[Any] maps to [JSON]. Mixed Int/Float maps to Float.
+# - Relationship cardinality was not present in the exports, so every relationship is a list.
+# - Relationship property types are inferred by matching property names across node properties;
+#   an unmatched relationship property maps to JSON.
+# - 28 node properties were present in graph metadata but absent from the
+#   typed-property export. They use a same-name type inference when available, otherwise JSON.
+# - Query fields are a proposed API contract and require application resolvers that execute Cypher.
 
-# Type for field count results
-type FieldCount {
-  field: String!
-  count: Int!
+schema {
+  query: Query
 }
 
-type cell_line {
+scalar BigInt
+scalar DateTime
+scalar JSON
+
+enum MemgraphDirection {
+  OUT
+  IN
+}
+
+directive @memgraphNode(label: String!) on OBJECT
+directive @memgraphEdge(type: String!, startLabel: String!, endLabel: String!) on OBJECT
+directive @memgraphRelationship(type: String!, direction: MemgraphDirection!) on FIELD_DEFINITION
+
+interface MemgraphNode {
+  guid: String
+}
+
+type Query {
+  cell_line_by_guid(guid: String!): CellLine
+  all_cell_line(limit: Int, offset: Int): [CellLine!]!
+  clinical_measure_file_by_guid(guid: String!): ClinicalMeasureFile
+  all_clinical_measure_file(limit: Int, offset: Int): [ClinicalMeasureFile!]!
+  consent_group_by_guid(guid: String!): ConsentGroup
+  all_consent_group(limit: Int, offset: Int): [ConsentGroup!]!
+  cytogenomic_file_by_guid(guid: String!): CytogenomicFile
+  all_cytogenomic_file(limit: Int, offset: Int): [CytogenomicFile!]!
+  diagnosis_by_guid(guid: String!): Diagnosis
+  all_diagnosis(limit: Int, offset: Int): [Diagnosis!]!
+  exposure_by_guid(guid: String!): Exposure
+  all_exposure(limit: Int, offset: Int): [Exposure!]!
+  family_relationship_by_guid(guid: String!): FamilyRelationship
+  all_family_relationship(limit: Int, offset: Int): [FamilyRelationship!]!
+  generic_file_by_guid(guid: String!): GenericFile
+  all_generic_file(limit: Int, offset: Int): [GenericFile!]!
+  genetic_analysis_by_guid(guid: String!): GeneticAnalysis
+  all_genetic_analysis(limit: Int, offset: Int): [GeneticAnalysis!]!
+  laboratory_test_by_guid(guid: String!): LaboratoryTest
+  all_laboratory_test(limit: Int, offset: Int): [LaboratoryTest!]!
+  medical_history_by_guid(guid: String!): MedicalHistory
+  all_medical_history(limit: Int, offset: Int): [MedicalHistory!]!
+  methylation_array_file_by_guid(guid: String!): MethylationArrayFile
+  all_methylation_array_file(limit: Int, offset: Int): [MethylationArrayFile!]!
+  participant_by_guid(guid: String!): Participant
+  all_participant(limit: Int, offset: Int): [Participant!]!
+  pathology_file_by_guid(guid: String!): PathologyFile
+  all_pathology_file(limit: Int, offset: Int): [PathologyFile!]!
+  pdx_by_guid(guid: String!): Pdx
+  all_pdx(limit: Int, offset: Int): [Pdx!]!
+  publication_by_guid(guid: String!): Publication
+  all_publication(limit: Int, offset: Int): [Publication!]!
+  radiology_file_by_guid(guid: String!): RadiologyFile
+  all_radiology_file(limit: Int, offset: Int): [RadiologyFile!]!
+  sample_by_guid(guid: String!): Sample
+  all_sample(limit: Int, offset: Int): [Sample!]!
+  sequencing_file_by_guid(guid: String!): SequencingFile
+  all_sequencing_file(limit: Int, offset: Int): [SequencingFile!]!
+  study_by_guid(guid: String!): Study
+  all_study(limit: Int, offset: Int): [Study!]!
+  study_admin_by_guid(guid: String!): StudyAdmin
+  all_study_admin(limit: Int, offset: Int): [StudyAdmin!]!
+  study_arm_by_guid(guid: String!): StudyArm
+  all_study_arm(limit: Int, offset: Int): [StudyArm!]!
+  study_funding_by_guid(guid: String!): StudyFunding
+  all_study_funding(limit: Int, offset: Int): [StudyFunding!]!
+  study_personnel_by_guid(guid: String!): StudyPersonnel
+  all_study_personnel(limit: Int, offset: Int): [StudyPersonnel!]!
+  study_status_by_guid(guid: String!): StudyStatus
+  all_study_status(limit: Int, offset: Int): [StudyStatus!]!
+  survival_by_guid(guid: String!): Survival
+  all_survival(limit: Int, offset: Int): [Survival!]!
+  synonym_by_guid(guid: String!): Synonym
+  all_synonym(limit: Int, offset: Int): [Synonym!]!
+  treatment_chemotherapy_by_guid(guid: String!): TreatmentChemotherapy
+  all_treatment_chemotherapy(limit: Int, offset: Int): [TreatmentChemotherapy!]!
+  treatment_other_by_guid(guid: String!): TreatmentOther
+  all_treatment_other(limit: Int, offset: Int): [TreatmentOther!]!
+  treatment_radiation_by_guid(guid: String!): TreatmentRadiation
+  all_treatment_radiation(limit: Int, offset: Int): [TreatmentRadiation!]!
+  treatment_response_by_guid(guid: String!): TreatmentResponse
+  all_treatment_response(limit: Int, offset: Int): [TreatmentResponse!]!
+  treatment_surgery_by_guid(guid: String!): TreatmentSurgery
+  all_treatment_surgery(limit: Int, offset: Int): [TreatmentSurgery!]!
+}
+
+type CellLine implements MemgraphNode @memgraphNode(label: "cell_line") {
   cell_line_id: String
+  created: DateTime
+  guid: String
   source: String
-  cell_line_passage_number: Float
-  id: String
-  samples: [sample!]!
-    @cypher(statement: """
-       CALL {
-        WITH this
-        MATCH (this)-[:of_cell_line]->(s:sample)
-        RETURN s
-        UNION
-        WITH this
-        MATCH (this)<-[:of_sample]-(s:sample)
-        RETURN s
-      }
-      RETURN DISTINCT s
-      ORDER BY s.sample_id
-    """, columnName: "s" )
-  study_of_cell_line: [study!]! @relationship(type: "of_cell_line", direction: OUT)
-  sample_of_cell_line: [sample!]! @relationship(type: "of_cell_line", direction: OUT)
-  cell_line_of_sample: [sample!]! @relationship(type: "of_sample", direction: IN)
+
+  out_of_cell_line_to_sample_edges: [CellLineOfCellLineSampleEdge!]! @memgraphRelationship(type: "of_cell_line", direction: OUT)
+  out_of_cell_line_to_study_edges: [CellLineOfCellLineStudyEdge!]! @memgraphRelationship(type: "of_cell_line", direction: OUT)
+  in_of_sample_from_sample_edges: [SampleOfSampleCellLineEdge!]! @memgraphRelationship(type: "of_sample", direction: IN)
 }
 
-type clinical_measure_file {
-  clinical_measure_file_id: String
-  file_name: String
-  data_category: String
-  file_type: String
-  file_description: String
-  file_size: Int
-  md5sum: String
-  file_mapping_level: String
-  file_access: String
+type ClinicalMeasureFile implements MemgraphNode @memgraphNode(label: "clinical_measure_file") {
   acl: String
   authz: String
-  file_url: String
+  clinical_measure_file_id: String
+  created: DateTime
+  data_category: [JSON]
   dcf_indexd_guid: String
-  checksum_algorithm: String
-  checksum_value: String
-  participant_list: String
-  id: String
-  crdc_id: String
-  study_of_clinical_measure_file: [study!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
-  participant_of_clinical_measure_file: [participant!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
-  sample_of_clinical_measure_file: [sample!]! @relationship(type: "of_clinical_measure_file", direction: OUT)
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: BigInt
+  file_type: String
+  file_url: String
+  guid: String
+  md5sum: String
+
+  out_of_clinical_measure_file_to_participant_edges: [ClinicalMeasureFileOfClinicalMeasureFileParticipantEdge!]! @memgraphRelationship(type: "of_clinical_measure_file", direction: OUT)
+  out_of_clinical_measure_file_to_study_edges: [ClinicalMeasureFileOfClinicalMeasureFileStudyEdge!]! @memgraphRelationship(type: "of_clinical_measure_file", direction: OUT)
 }
 
-type consent_group {
+type ConsentGroup implements MemgraphNode @memgraphNode(label: "consent_group") {
   consent_group_id: String
   consent_group_name: String
   consent_group_suffix: String
-  id: String
-  study_of_consent_group: [study!]! @relationship(type: "of_consent_group", direction: OUT)
-  consent_group_of_participant: [participant!]! @relationship(type: "of_participant", direction: IN)
+  created: DateTime
+  guid: String
+
+  out_of_consent_group_to_study_edges: [ConsentGroupOfConsentGroupStudyEdge!]! @memgraphRelationship(type: "of_consent_group", direction: OUT)
+  in_of_participant_from_participant_edges: [ParticipantOfParticipantConsentGroupEdge!]! @memgraphRelationship(type: "of_participant", direction: IN)
 }
 
-type cytogenomic_file {
-  cytogenomic_file_id: String
-  file_name: String
-  data_category: String
-  file_type: String
-  file_description: String
-  file_size: Int
-  md5sum: String
-  file_mapping_level: String
-  file_access: String
+type CytogenomicFile implements MemgraphNode @memgraphNode(label: "cytogenomic_file") {
   acl: String
   authz: String
-  file_url: String
-  dcf_indexd_guid: String
+  created: DateTime
+  cytogenomic_file_id: String
   cytogenomic_platform: String
-  id: String
-  crdc_id: String
-  sample_of_cytogenomic_file: [sample!]! @relationship(type: "of_cytogenomic_file", direction: OUT)
+  data_category: [JSON]
+  dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: BigInt
+  file_type: String
+  file_url: String
+  guid: String
+  md5sum: String
+
+  out_of_cytogenomic_file_to_sample_edges: [CytogenomicFileOfCytogenomicFileSampleEdge!]! @memgraphRelationship(type: "of_cytogenomic_file", direction: OUT)
 }
 
-type diagnosis {
-  diagnosis_id: String
-  submitted_diagnosis: String
+type Diagnosis implements MemgraphNode @memgraphNode(label: "diagnosis") {
+  age_at_diagnosis: BigInt
+  anatomic_site: [JSON]
+  created: DateTime
   diagnosis: String
-  diagnosis_category: String
-  diagnosis_classification_system: String
-  diagnosis_basis: String
-  diagnosis_comment: String
+  diagnosis_basis: [JSON]
+  diagnosis_category: [JSON]
+  diagnosis_classification_system: [JSON]
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  diagnosis_comment: JSON
+  diagnosis_id: String
   disease_phase: String
-  tumor_spatial_extent: String
-  submitted_anatomic_site: String
-  anatomic_site: String
-  age_at_diagnosis: Float
-  toronto_childhood_cancer_staging: String
-  tumor_stage_clinical_t: String
-  tumor_stage_clinical_n: String
-  tumor_stage_clinical_m: String
-  tumor_stage_source: String
-  tumor_grade: String
-  tumor_grade_source: String
-  year_of_diagnosis: String
+  guid: String
+  # Type absent from typed-property export; inferred from a same-named property.
   laterality: String
-  id: String
-  participant_of_diagnosis: [participant!]! @relationship(type: "of_diagnosis", direction: OUT)
-  sample_of_diagnosis: [sample!]! @relationship(type: "of_diagnosis", direction: OUT)
+  submitted_anatomic_site: [JSON]
+  submitted_diagnosis: String
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  toronto_childhood_cancer_staging: JSON
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  tumor_grade: JSON
+  tumor_spatial_extent: String
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  tumor_stage_clinical_m: JSON
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  tumor_stage_clinical_n: JSON
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  tumor_stage_clinical_t: JSON
+
+  out_of_diagnosis_to_participant_edges: [DiagnosisOfDiagnosisParticipantEdge!]! @memgraphRelationship(type: "of_diagnosis", direction: OUT)
+  out_of_diagnosis_to_sample_edges: [DiagnosisOfDiagnosisSampleEdge!]! @memgraphRelationship(type: "of_diagnosis", direction: OUT)
 }
 
-type exposure {
-  exposure_id: String
-  age_at_exposure: Float
-  pack_years_smoked: Float
-  years_smoked: Float
-  alcohol_days_per_week: Float
-  alcohol_drinks_per_day: Float
+type Exposure implements MemgraphNode @memgraphNode(label: "exposure") {
+  age_at_exposure: BigInt
+  alcohol_days_per_week: BigInt
+  alcohol_drinks_per_day: BigInt
   alcohol_history: String
   alcohol_intensity: String
   asbestos_exposure: String
-  cigarettes_per_day: Int
+  cigarettes_per_day: BigInt
   coal_dust_exposure: String
+  created: DateTime
   environmental_tobacco_smoke_exposure: String
+  exposure_id: String
+  guid: String
+  pack_years_smoked: BigInt
   radon_exposure: String
   respirable_crystalline_silica_exposure: String
   smoking_frequency: String
   time_between_waking_and_first_smoke: String
-  tobacco_smoking_onset_year: Int
-  tobacco_smoking_quit_year: Int
+  tobacco_smoking_onset_year: BigInt
+  tobacco_smoking_quit_year: BigInt
   tobacco_smoking_status: String
-  type_of_smoke_exposure: String
-  type_of_tobacco_used: String
-  id: String
-  participant_of_exposure: [participant!]! @relationship(type: "of_exposure", direction: OUT)
+  type_of_smoke_exposure: [JSON]
+  years_smoked: BigInt
+
+  out_of_exposure_to_participant_edges: [ExposureOfExposureParticipantEdge!]! @memgraphRelationship(type: "of_exposure", direction: OUT)
 }
 
-type family_relationship {
-  family_relationship_id: String
-  relationship: String
+type FamilyRelationship implements MemgraphNode @memgraphNode(label: "family_relationship") {
+  created: DateTime
   family_id: String
-  id: String
-  participant_of_family_relationship: [participant!]! @relationship(type: "of_family_relationship", direction: OUT)
+  family_relationship_id: String
+  guid: String
+  relationship: String
+
+  out_of_family_relationship_to_participant_edges: [FamilyRelationshipOfFamilyRelationshipParticipantEdge!]! @memgraphRelationship(type: "of_family_relationship", direction: OUT)
 }
 
-type genetic_analysis {
-  genetic_analysis_id: String
-  age_at_genetic_analysis: Float
-  genomic_source_category: String
-  reported_significance: String
-  reported_significance_system: String
-  test: String
-  method: String
-  result: String
-  reference_genome: String
-  chromosome: String
-  cytoband: String
-  gene_symbol: String
-  transcript: String
-  exon: String
-  hgvs_coding: String
-  hgvs_protein: String
-  hgvs_genome: String
-  allelic_ratio: Float
-  vaf_numeric: Float
+type GenericFile implements MemgraphNode @memgraphNode(label: "generic_file") {
+  acl: String
+  authz: String
+  created: DateTime
+  data_category: [JSON]
+  dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: BigInt
+  file_type: String
+  file_url: String
+  generic_file_id: String
+  guid: String
+  md5sum: String
+
+  out_of_generic_file_to_sample_edges: [GenericFileOfGenericFileSampleEdge!]! @memgraphRelationship(type: "of_generic_file", direction: OUT)
+  out_of_generic_file_to_study_edges: [GenericFileOfGenericFileStudyEdge!]! @memgraphRelationship(type: "of_generic_file", direction: OUT)
+}
+
+type GeneticAnalysis implements MemgraphNode @memgraphNode(label: "genetic_analysis") {
+  age_at_genetic_analysis: BigInt
   alteration: String
-  alteration_type: String
   alteration_effect: String
-  dna_index_numeric: Float
-  iscn: String
-  status: String
+  alteration_type: String
+  chromosome: String
+  created: DateTime
+  cytoband: String
+  exon: String
+  fusion_partner_exon: String
   fusion_partner_gene: String
   fusion_partner_transcript: String
-  fusion_partner_exon: String
+  gene_symbol: String
+  genetic_analysis_id: String
+  genomic_source_category: String
+  guid: String
+  hgvs_coding: String
+  hgvs_genome: String
+  hgvs_protein: String
+  method: String
+  reference_genome: String
+  reported_significance: String
+  reported_significance_system: String
+  result: String
+  status: String
+  test: String
+  transcript: String
   translocation_partner_chromosome: String
   translocation_partner_cytoband: String
-  id: String
-  sample_of_genetic_analysis: [sample!]! @relationship(type: "of_genetic_analysis", direction: OUT)
-  participant_of_genetic_analysis: [participant!]! @relationship(type: "of_genetic_analysis", direction: OUT)
+  vaf_numeric: Float
+
+  out_of_genetic_analysis_to_sample_edges: [GeneticAnalysisOfGeneticAnalysisSampleEdge!]! @memgraphRelationship(type: "of_genetic_analysis", direction: OUT)
 }
 
-type medical_history {
-  medical_history_id: String
-  medical_history_category: String
-  medical_history_condition: String
-  id: String
-  participant_of_medical_history: [participant!]! @relationship(type: "of_medical_history", direction: OUT)
-}
-
-type laboratory_test {
+type LaboratoryTest implements MemgraphNode @memgraphNode(label: "laboratory_test") {
+  age_at_laboratory_test: BigInt
+  created: DateTime
+  guid: String
   laboratory_test_id: String
-  age_at_laboratory_test: Float
   laboratory_test_method: String
-  laboratory_test_name: String
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  laboratory_test_name: JSON
+  sensitivity: BigInt
   specimen: String
-  test_result_text: String
   test_result_modifier: String
-  test_result_numeric: String
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  test_result_numeric: JSON
+  test_result_text: String
   test_result_unit: String
-  sensitivity: Float
-  id: String
-  participant_of_laboratory_test: [participant!]! @relationship(type: "of_laboratory_test", direction: OUT)
-  sample_of_laboratory_test: [sample!]! @relationship(type: "of_laboratory_test", direction: OUT)
+
+  out_of_laboratory_test_to_participant_edges: [LaboratoryTestOfLaboratoryTestParticipantEdge!]! @memgraphRelationship(type: "of_laboratory_test", direction: OUT)
+  out_of_laboratory_test_to_sample_edges: [LaboratoryTestOfLaboratoryTestSampleEdge!]! @memgraphRelationship(type: "of_laboratory_test", direction: OUT)
 }
 
-type methylation_array_file {
-  methylation_array_file_id: String
-  file_name: String
-  data_category: String
-  file_type: String
-  file_description: String
-  file_size: Int
-  md5sum: String
-  file_mapping_level: String
-  file_access: String
+type MedicalHistory implements MemgraphNode @memgraphNode(label: "medical_history") {
+  created: DateTime
+  guid: String
+  medical_history_category: String
+  medical_history_condition: [JSON]
+  medical_history_id: String
+
+  out_of_medical_history_to_participant_edges: [MedicalHistoryOfMedicalHistoryParticipantEdge!]! @memgraphRelationship(type: "of_medical_history", direction: OUT)
+}
+
+type MethylationArrayFile implements MemgraphNode @memgraphNode(label: "methylation_array_file") {
   acl: String
   authz: String
-  file_url: String
+  created: DateTime
+  data_category: [JSON]
   dcf_indexd_guid: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: BigInt
+  file_type: String
+  file_url: String
+  guid: String
+  md5sum: String
+  methylation_array_file_id: String
   methylation_platform: String
   reporter_label: String
-  id: String
-  crdc_id: String
-  sample_of_methylation_array_file: [sample!]! @relationship(type: "of_methylation_array_file", direction: OUT)
+
+  out_of_methylation_array_file_to_sample_edges: [MethylationArrayFileOfMethylationArrayFileSampleEdge!]! @memgraphRelationship(type: "of_methylation_array_file", direction: OUT)
 }
 
-type participant {
+type Participant implements MemgraphNode @memgraphNode(label: "participant") {
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  crdc_id: JSON
+  created: DateTime
+  guid: String
   participant_id: String
-  race: String
+  race: [JSON]
   sex_at_birth: String
-  id: String
-  crdc_id: String
-  consent_groups: [consent_group!]!
-    @cypher(statement: """
-       CALL {
-        WITH this
-        MATCH (this)-[:of_participant]->(s:consent_group)
-        RETURN s
-        UNION
-        WITH this
-        MATCH (this)<-[:of_consent_group]-(s:consent_group)
-        RETURN s
-      }
-      RETURN DISTINCT s
-      ORDER BY s.consent_group_id
-    """, columnName: "s" )
-  consent_group_of_participant: [consent_group!]! @relationship(type: "of_participant", direction: OUT)
-  participant_of_clinical_measure_file: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
-  participant_of_diagnosis: [diagnosis!]! @relationship(type: "of_diagnosis", direction: IN)
-  participant_of_exposure: [exposure!]! @relationship(type: "of_exposure", direction: IN)
-  participant_of_family_relationship: [family_relationship!]! @relationship(type: "of_family_relationship", direction: IN)
-  participant_of_generic_file: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
-  participant_of_genetic_analysis: [genetic_analysis!]! @relationship(type: "of_genetic_analysis", direction: IN)
-  participant_of_laboratory_test: [laboratory_test!]! @relationship(type: "of_laboratory_test", direction: IN)
-  participant_of_medical_history: [medical_history!]! @relationship(type: "of_medical_history", direction: IN)
-  participant_of_radiology_file: [radiology_file!]! @relationship(type: "of_radiology_file", direction: IN)
-  participant_of_sample: [sample!]! @relationship(type: "of_sample", direction: IN)
-  participant_of_survival: [survival!]! @relationship(type: "of_survival", direction: IN)
-  participant_of_synonym: [synonym!]! @relationship(type: "of_synonym", direction: IN)
-  participant_of_treatment: [treatment!]! @relationship(type: "of_treatment", direction: IN)
-  participant_of_treatment_response: [treatment_response!]! @relationship(type: "of_treatment_response", direction: IN)
+
+  out_of_participant_to_consent_group_edges: [ParticipantOfParticipantConsentGroupEdge!]! @memgraphRelationship(type: "of_participant", direction: OUT)
+  in_of_clinical_measure_file_from_clinical_measure_file_edges: [ClinicalMeasureFileOfClinicalMeasureFileParticipantEdge!]! @memgraphRelationship(type: "of_clinical_measure_file", direction: IN)
+  in_of_diagnosis_from_diagnosis_edges: [DiagnosisOfDiagnosisParticipantEdge!]! @memgraphRelationship(type: "of_diagnosis", direction: IN)
+  in_of_exposure_from_exposure_edges: [ExposureOfExposureParticipantEdge!]! @memgraphRelationship(type: "of_exposure", direction: IN)
+  in_of_family_relationship_from_family_relationship_edges: [FamilyRelationshipOfFamilyRelationshipParticipantEdge!]! @memgraphRelationship(type: "of_family_relationship", direction: IN)
+  in_of_laboratory_test_from_laboratory_test_edges: [LaboratoryTestOfLaboratoryTestParticipantEdge!]! @memgraphRelationship(type: "of_laboratory_test", direction: IN)
+  in_of_medical_history_from_medical_history_edges: [MedicalHistoryOfMedicalHistoryParticipantEdge!]! @memgraphRelationship(type: "of_medical_history", direction: IN)
+  in_of_radiology_file_from_radiology_file_edges: [RadiologyFileOfRadiologyFileParticipantEdge!]! @memgraphRelationship(type: "of_radiology_file", direction: IN)
+  in_of_sample_from_sample_edges: [SampleOfSampleParticipantEdge!]! @memgraphRelationship(type: "of_sample", direction: IN)
+  in_of_survival_from_survival_edges: [SurvivalOfSurvivalParticipantEdge!]! @memgraphRelationship(type: "of_survival", direction: IN)
+  in_of_synonym_from_synonym_edges: [SynonymOfSynonymParticipantEdge!]! @memgraphRelationship(type: "of_synonym", direction: IN)
+  in_of_treatment_chemotherapy_from_treatment_chemotherapy_edges: [TreatmentChemotherapyOfTreatmentChemotherapyParticipantEdge!]! @memgraphRelationship(type: "of_treatment_chemotherapy", direction: IN)
+  in_of_treatment_other_from_treatment_other_edges: [TreatmentOtherOfTreatmentOtherParticipantEdge!]! @memgraphRelationship(type: "of_treatment_other", direction: IN)
+  in_of_treatment_radiation_from_treatment_radiation_edges: [TreatmentRadiationOfTreatmentRadiationParticipantEdge!]! @memgraphRelationship(type: "of_treatment_radiation", direction: IN)
+  in_of_treatment_response_from_treatment_response_edges: [TreatmentResponseOfTreatmentResponseParticipantEdge!]! @memgraphRelationship(type: "of_treatment_response", direction: IN)
+  in_of_treatment_surgery_from_treatment_surgery_edges: [TreatmentSurgeryOfTreatmentSurgeryParticipantEdge!]! @memgraphRelationship(type: "of_treatment_surgery", direction: IN)
 }
 
-type pathology_file {
-  pathology_file_id: String
-  file_name: String
-  data_category: String
-  file_type: String
-  file_description: String
-  file_size: Int
-  md5sum: String
-  file_mapping_level: String
-  file_access: String
+type PathologyFile implements MemgraphNode @memgraphNode(label: "pathology_file") {
   acl: String
   authz: String
-  file_url: String
+  created: DateTime
+  data_category: [JSON]
   dcf_indexd_guid: String
+  deidentification_method: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: BigInt
+  file_type: String
+  file_url: String
+  fixation_embedding_method: String
+  guid: String
   image_modality: String
   license: String
   magnification: String
-  fixation_embedding_method: String
-  staining_method: String
-  deidentification_method: String
+  md5sum: String
+  pathology_file_id: String
   slim_url: String
-  id: String
-  crdc_id: String
-  sample_of_pathology_file: [sample!]! @relationship(type: "of_pathology_file", direction: OUT)
+  staining_method: String
+
+  out_of_pathology_file_to_sample_edges: [PathologyFileOfPathologyFileSampleEdge!]! @memgraphRelationship(type: "of_pathology_file", direction: OUT)
 }
 
-type pdx {
-  pdx_id: String
+type Pdx implements MemgraphNode @memgraphNode(label: "pdx") {
+  created: DateTime
+  guid: String
+  implantation_site: String
+  implantation_type: String
+  is_tumor_from_untreated_patient: String
   model_id: String
   mouse_strain: String
-  sample_type_for_implantation: String
-  implantation_type: String
-  implantation_site: String
-  tumor_confirmed_not_to_be_mus_or_ebv_origin: String
-  is_tumor_from_untreated_patient: Boolean
   passage_number: String
-  passages_tested: String
-  validation_technique: String
-  id: String
-  samples: [sample!]!
-    @cypher(statement: """
-       CALL {
-        WITH this
-        MATCH (this)-[:of_pdx]->(s:sample)
-        RETURN s
-        UNION
-        WITH this
-        MATCH (this)<-[:of_sample]-(s:sample)
-        RETURN s
-      }
-      RETURN DISTINCT s
-      ORDER BY s.sample_id
-    """, columnName: "s" )
-  study_of_pdx: [study!]! @relationship(type: "of_pdx", direction: OUT)
-  sample_of_pdx: [sample!]! @relationship(type: "of_pdx", direction: OUT)
-  pdx_of_sample: [sample!]! @relationship(type: "of_sample", direction: IN)
+  pdx_id: String
+  sample_type_for_implantation: String
+
+  out_of_pdx_to_sample_edges: [PdxOfPdxSampleEdge!]! @memgraphRelationship(type: "of_pdx", direction: OUT)
+  in_of_sample_from_sample_edges: [SampleOfSamplePdxEdge!]! @memgraphRelationship(type: "of_sample", direction: IN)
 }
 
-type publication {
+type Publication implements MemgraphNode @memgraphNode(label: "publication") {
+  created: DateTime
+  guid: String
   publication_id: String
   pubmed_id: String
-  id: String
-  study_of_publication: [study!]! @relationship(type: "of_publication", direction: OUT)
+
+  out_of_publication_to_study_edges: [PublicationOfPublicationStudyEdge!]! @memgraphRelationship(type: "of_publication", direction: OUT)
 }
 
-type radiology_file {
-  radiology_file_id: String
-  file_name: String
-  data_category: String
-  file_type: String
-  file_description: String
-  file_size: Int
-  md5sum: String
-  file_mapping_level: String
-  file_access: String
+type RadiologyFile implements MemgraphNode @memgraphNode(label: "radiology_file") {
   acl: String
+  anatomic_site: [JSON]
   authz: String
-  file_url: String
+  created: DateTime
+  data_category: [JSON]
   dcf_indexd_guid: String
-  anatomic_site: String
-  participant_age_at_imaging: Float
-  image_modality: String
   deidentification_method: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: BigInt
+  file_type: String
+  file_url: String
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  flip_angle: JSON
+  guid: String
+  image_modality: String
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  inversion_time: JSON
   magnetic_field_strength: String
+  md5sum: String
+  participant_age_at_imaging: BigInt
+  radiology_file_id: String
   scanner_manufacturer: String
   scanner_model: String
-  imaging_frequency: String
-  repetition_time: String
-  echo_time: String
-  inversion_time: String
-  flip_angle: String
-  pixel_spacing: String
-  slice_thickness: String
-  echoPulseSequenceCategoryCode: String
-  diffusionBValue: String
-  diffusionDirectionalityCode: String
-  resonantNucleusCode: String
-  acquisitionContrastCode: String
-  inversionRecoveryIndicator: String
-  pulseSequenceName: String
-  multipleSpinEchoIndicator: String
-  phaseContrastIndicator: String
-  timeOfFlightContrastIndicator: String
-  arterialSpinLabelingContrastCode: String
-  steadyStatePulseSequenceCode: String
-  echoPlanarPulseSequenceIndicator: String
-  saturationRecoveryIndicator: String
-  spectrallySelectedSuppressionCode: String
-  mrImageReconstructionProtocolElement: String
-  complexImageComponentCode: String
-  id: String
-  crdc_id: String
-  participant_of_radiology_file: [participant!]! @relationship(type: "of_radiology_file", direction: OUT)
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  slice_thickness: JSON
+
+  out_of_radiology_file_to_participant_edges: [RadiologyFileOfRadiologyFileParticipantEdge!]! @memgraphRelationship(type: "of_radiology_file", direction: OUT)
 }
 
-type generic_file {
-  generic_file_id: String
-  file_name: String
-  data_category: String
-  file_type: String
-  file_description: String
-  file_size: Int
-  md5sum: String
-  file_mapping_level: String
-  file_access: String
-  acl: String
-  authz: String
-  file_url: String
-  dcf_indexd_guid: String
-  id: String
-  crdc_id: String
-  study_of_generic_file: [study!]! @relationship(type: "of_generic_file", direction: OUT)
-  participant_of_generic_file: [participant!]! @relationship(type: "of_generic_file", direction: OUT)
-  sample_of_generic_file: [sample!]! @relationship(type: "of_generic_file", direction: OUT)
-}
-
-type sample {
+type Sample implements MemgraphNode @memgraphNode(label: "sample") {
+  anatomic_site: [JSON]
+  created: DateTime
+  guid: String
+  laterality: String
+  participant_age_at_collection: BigInt
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  percent_necrosis: JSON
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  percent_tumor: JSON
+  sample_description: String
   sample_id: String
-  anatomic_site: String
-  participant_age_at_collection: Float
   sample_tumor_status: String
   tumor_spatial_extent: String
-  sample_description: String
-  percent_tumor: Float
-  percent_necrosis: Float
-  laterality: String
-  id: String
-  crdc_id: String
-  pdxes: [pdx!]!
-    @cypher(statement: """
-       CALL {
-        WITH this
-        MATCH (this)-[:of_sample]->(p:pdx)
-        RETURN p
-        UNION
-        WITH this
-        MATCH (this)<-[:of_pdx]-(p:pdx)
-        RETURN p
-      }
-      RETURN DISTINCT p
-      ORDER BY p.pdx_id
-    """, columnName: "p" )
-  cell_lines: [cell_line!]!
-    @cypher(statement: """
-       CALL {
-        WITH this
-        MATCH (this)-[:of_sample]->(c:cell_line)
-        RETURN c
-        UNION
-        WITH this
-        MATCH (this)<-[:of_cell_line]-(c:cell_line)
-        RETURN c
-      }
-      RETURN DISTINCT c
-      ORDER BY c.cell_line_id
-    """, columnName: "c" )
-  participants: [participant!]!
-    @cypher(statement: """
-       CALL {
-        WITH this
-        MATCH (this)-[:of_sample]->(p:participant)
-        RETURN p
-        UNION
-        WITH this
-        MATCH (this)<-[:of_participant]-(p:participant)
-        RETURN p
-      }
-      RETURN DISTINCT p
-      ORDER BY p.participant_id
-    """, columnName: "p" )
-  participant_of_sample: [participant!]! @relationship(type: "of_sample", direction: OUT)
-  pdx_of_sample: [pdx!]! @relationship(type: "of_sample", direction: OUT)
-  cell_line_of_sample: [cell_line!]! @relationship(type: "of_sample", direction: OUT)
-  sample_of_clinical_measure_file: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
-  sample_of_cytogenomic_file: [cytogenomic_file!]! @relationship(type: "of_cytogenomic_file", direction: IN)
-  sample_of_diagnosis: [diagnosis!]! @relationship(type: "of_diagnosis", direction: IN)
-  sample_of_generic_file: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
-  sample_of_genetic_analysis: [genetic_analysis!]! @relationship(type: "of_genetic_analysis", direction: IN)
-  sample_of_laboratory_test: [laboratory_test!]! @relationship(type: "of_laboratory_test", direction: IN)
-  sample_of_methylation_array_file: [methylation_array_file!]! @relationship(type: "of_methylation_array_file", direction: IN)
-  sample_of_pathology_file: [pathology_file!]! @relationship(type: "of_pathology_file", direction: IN)
-  sample_of_pdx: [pdx!]! @relationship(type: "of_pdx", direction: IN)
-  sample_of_sequencing_file: [sequencing_file!]! @relationship(type: "of_sequencing_file", direction: IN)
-  sample_of_synonym: [synonym!]! @relationship(type: "of_synonym", direction: IN)
+
+  out_of_sample_to_cell_line_edges: [SampleOfSampleCellLineEdge!]! @memgraphRelationship(type: "of_sample", direction: OUT)
+  out_of_sample_to_participant_edges: [SampleOfSampleParticipantEdge!]! @memgraphRelationship(type: "of_sample", direction: OUT)
+  out_of_sample_to_pdx_edges: [SampleOfSamplePdxEdge!]! @memgraphRelationship(type: "of_sample", direction: OUT)
+  in_of_cell_line_from_cell_line_edges: [CellLineOfCellLineSampleEdge!]! @memgraphRelationship(type: "of_cell_line", direction: IN)
+  in_of_cytogenomic_file_from_cytogenomic_file_edges: [CytogenomicFileOfCytogenomicFileSampleEdge!]! @memgraphRelationship(type: "of_cytogenomic_file", direction: IN)
+  in_of_diagnosis_from_diagnosis_edges: [DiagnosisOfDiagnosisSampleEdge!]! @memgraphRelationship(type: "of_diagnosis", direction: IN)
+  in_of_generic_file_from_generic_file_edges: [GenericFileOfGenericFileSampleEdge!]! @memgraphRelationship(type: "of_generic_file", direction: IN)
+  in_of_genetic_analysis_from_genetic_analysis_edges: [GeneticAnalysisOfGeneticAnalysisSampleEdge!]! @memgraphRelationship(type: "of_genetic_analysis", direction: IN)
+  in_of_laboratory_test_from_laboratory_test_edges: [LaboratoryTestOfLaboratoryTestSampleEdge!]! @memgraphRelationship(type: "of_laboratory_test", direction: IN)
+  in_of_methylation_array_file_from_methylation_array_file_edges: [MethylationArrayFileOfMethylationArrayFileSampleEdge!]! @memgraphRelationship(type: "of_methylation_array_file", direction: IN)
+  in_of_pathology_file_from_pathology_file_edges: [PathologyFileOfPathologyFileSampleEdge!]! @memgraphRelationship(type: "of_pathology_file", direction: IN)
+  in_of_pdx_from_pdx_edges: [PdxOfPdxSampleEdge!]! @memgraphRelationship(type: "of_pdx", direction: IN)
+  in_of_sequencing_file_from_sequencing_file_edges: [SequencingFileOfSequencingFileSampleEdge!]! @memgraphRelationship(type: "of_sequencing_file", direction: IN)
+  in_of_synonym_from_synonym_edges: [SynonymOfSynonymSampleEdge!]! @memgraphRelationship(type: "of_synonym", direction: IN)
 }
 
-type sequencing_file {
-  sequencing_file_id: String
-  file_name: String
-  data_category: String
-  file_type: String
-  file_description: String
-  file_size: Int
-  md5sum: String
-  file_mapping_level: String
-  file_access: String
+type SequencingFile implements MemgraphNode @memgraphNode(label: "sequencing_file") {
   acl: String
   authz: String
-  file_url: String
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  avg_read_length: JSON
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  coverage: JSON
+  created: DateTime
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  custom_assembly_fasta_file_for_alignment: JSON
+  data_category: [JSON]
   dcf_indexd_guid: String
+  design_description: String
+  file_access: String
+  file_description: String
+  file_mapping_level: String
+  file_name: String
+  file_size: BigInt
+  file_type: String
+  file_url: String
+  guid: String
+  instrument_model: String
   library_id: String
-  library_selection: String
-  library_strategy: String
   library_layout: String
+  library_selection: String
   library_source_material: String
   library_source_molecule: String
-  number_of_bp: Int
-  number_of_reads: Int
-  design_description: String
+  library_strategy: String
+  md5sum: String
+  number_of_bp: BigInt
+  number_of_reads: BigInt
   platform: String
-  instrument_model: String
-  avg_read_length: Float
-  coverage: Float
-  reference_genome_assembly: String
-  checksum_algorithm: String
-  checksum_value: String
-  custom_assembly_fasta_file_for_alignment: String
-  sequence_alignment_software: String
-  cDNA_read: String
-  cDNA_read_size: String
-  cDNA_read_offset: String
-  cell_barcode_offset: String
-  cell_barcode_read: String
-  cell_barcode_size: String
-  single_cell_entity: String
-  dissociation_method: String
-  end_bias: String
-  total_number_of_input_cells: String
-  library_construction_method: String
-  library_strand: String
-  protocols_link: String
-  reverse_transcription_primer: String
-  spike_in: String
-  UMI_barcode_offset: String
-  UMI_barcode_read: String
-  UMI_barcode_size: String
-  id: String
-  crdc_id: String
-  sample_of_sequencing_file: [sample!]! @relationship(type: "of_sequencing_file", direction: OUT)
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  reference_genome_assembly: JSON
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  sequence_alignment_software: JSON
+  sequencing_file_id: String
+
+  out_of_sequencing_file_to_sample_edges: [SequencingFileOfSequencingFileSampleEdge!]! @memgraphRelationship(type: "of_sequencing_file", direction: OUT)
 }
 
-type study {
-  study_id: String
+type Study implements MemgraphNode @memgraphNode(label: "study") {
+  created: DateTime
   dbgap_accession: String
-  study_name: String
-  study_acronym: String
-  study_description: String
+  experimental_strategy_and_data_subtype: [JSON]
   external_url: String
-  experimental_strategy_and_data_subtype: String
-  study_status: String
-  study_period_start: Int
-  study_period_stop: Int
-  study_data_types: String
-  size_of_data_being_uploaded: String
-  curation_status: String
-  release_status: String
-  id: String
-  crdc_id: String
-  study_of_cell_line: [cell_line!]! @relationship(type: "of_cell_line", direction: IN)
-  study_of_clinical_measure_file: [clinical_measure_file!]! @relationship(type: "of_clinical_measure_file", direction: IN)
-  study_of_consent_group: [consent_group!]! @relationship(type: "of_consent_group", direction: IN)
-  study_of_generic_file: [generic_file!]! @relationship(type: "of_generic_file", direction: IN)
-  study_of_pdx: [pdx!]! @relationship(type: "of_pdx", direction: IN)
-  study_of_publication: [publication!]! @relationship(type: "of_publication", direction: IN)
-  study_of_study_admin: [study_admin!]! @relationship(type: "of_study_admin", direction: IN)
-  study_of_study_arm: [study_arm!]! @relationship(type: "of_study_arm", direction: IN)
-  study_of_study_funding: [study_funding!]! @relationship(type: "of_study_funding", direction: IN)
-  study_of_study_personnel: [study_personnel!]! @relationship(type: "of_study_personnel", direction: IN)
-  study_of_synonym: [synonym!]! @relationship(type: "of_synonym", direction: IN)
+  guid: String
+  promotion_status: [JSON]
+  study_acronym: String
+  study_data_types: [JSON]
+  study_description: String
+  study_id: String
+  study_name: String
+  study_phase: String
+
+  in_of_cell_line_from_cell_line_edges: [CellLineOfCellLineStudyEdge!]! @memgraphRelationship(type: "of_cell_line", direction: IN)
+  in_of_clinical_measure_file_from_clinical_measure_file_edges: [ClinicalMeasureFileOfClinicalMeasureFileStudyEdge!]! @memgraphRelationship(type: "of_clinical_measure_file", direction: IN)
+  in_of_consent_group_from_consent_group_edges: [ConsentGroupOfConsentGroupStudyEdge!]! @memgraphRelationship(type: "of_consent_group", direction: IN)
+  in_of_generic_file_from_generic_file_edges: [GenericFileOfGenericFileStudyEdge!]! @memgraphRelationship(type: "of_generic_file", direction: IN)
+  in_of_publication_from_publication_edges: [PublicationOfPublicationStudyEdge!]! @memgraphRelationship(type: "of_publication", direction: IN)
+  in_of_study_admin_from_study_admin_edges: [StudyAdminOfStudyAdminStudyEdge!]! @memgraphRelationship(type: "of_study_admin", direction: IN)
+  in_of_study_arm_from_study_arm_edges: [StudyArmOfStudyArmStudyEdge!]! @memgraphRelationship(type: "of_study_arm", direction: IN)
+  in_of_study_funding_from_study_funding_edges: [StudyFundingOfStudyFundingStudyEdge!]! @memgraphRelationship(type: "of_study_funding", direction: IN)
+  in_of_study_personnel_from_study_personnel_edges: [StudyPersonnelOfStudyPersonnelStudyEdge!]! @memgraphRelationship(type: "of_study_personnel", direction: IN)
+  in_of_study_status_from_study_status_edges: [StudyStatusOfStudyStatusStudyEdge!]! @memgraphRelationship(type: "of_study_status", direction: IN)
 }
 
-type study_admin {
-  study_admin_id: String
-  organism_species: String
+type StudyAdmin implements MemgraphNode @memgraphNode(label: "study_admin") {
   adult_or_childhood_study: String
+  created: DateTime
   file_types_and_format: String
-  number_of_participants: Int
-  number_of_samples: Int
-  id: String
-  study_of_study_admin: [study!]! @relationship(type: "of_study_admin", direction: OUT)
+  guid: String
+  organism_species: String
+  study_admin_id: String
+
+  out_of_study_admin_to_study_edges: [StudyAdminOfStudyAdminStudyEdge!]! @memgraphRelationship(type: "of_study_admin", direction: OUT)
 }
 
-type study_arm {
-  study_arm_id: String
-  study_arm_description: String
+type StudyArm implements MemgraphNode @memgraphNode(label: "study_arm") {
   clinical_trial_identifier: String
   clinical_trial_repository: String
-  id: String
-  study_of_study_arm: [study!]! @relationship(type: "of_study_arm", direction: OUT)
+  created: DateTime
+  guid: String
+  study_arm_description: String
+  study_arm_id: String
+
+  out_of_study_arm_to_study_edges: [StudyArmOfStudyArmStudyEdge!]! @memgraphRelationship(type: "of_study_arm", direction: OUT)
 }
 
-type study_funding {
-  study_funding_id: String
+type StudyFunding implements MemgraphNode @memgraphNode(label: "study_funding") {
+  created: DateTime
   funding_agency: String
-  grant_id: String
   funding_source_program_name: String
-  id: String
-  study_of_study_funding: [study!]! @relationship(type: "of_study_funding", direction: OUT)
+  grant_id: String
+  guid: String
+  study_funding_id: String
+
+  out_of_study_funding_to_study_edges: [StudyFundingOfStudyFundingStudyEdge!]! @memgraphRelationship(type: "of_study_funding", direction: OUT)
 }
 
-type study_personnel {
-  study_personnel_id: String
-  personnel_name: String
-  personnel_type: String
+type StudyPersonnel implements MemgraphNode @memgraphNode(label: "study_personnel") {
+  created: DateTime
   email_address: String
+  guid: String
   institution: String
   orcid: String
-  id: String
-  crdc_id: String
-  study_of_study_personnel: [study!]! @relationship(type: "of_study_personnel", direction: OUT)
+  personnel_name: String
+  personnel_type: String
+  study_personnel_id: String
+
+  out_of_study_personnel_to_study_edges: [StudyPersonnelOfStudyPersonnelStudyEdge!]! @memgraphRelationship(type: "of_study_personnel", direction: OUT)
 }
 
-type survival {
-  survival_id: String
-  last_known_survival_status: String
-  age_at_last_known_survival_status: Float
+type StudyStatus implements MemgraphNode @memgraphNode(label: "study_status") {
+  created: DateTime
+  external_url: String
+  guid: String
+  number_of_files: BigInt
+  number_of_participants: BigInt
+  number_of_samples: BigInt
+  release_status: [JSON]
+  repository_name: String
+  study_repository_released: String
+  study_repository_start: String
+  study_status_id: String
+  total_size_of_data_files: BigInt
+  version: String
+
+  out_of_study_status_to_study_edges: [StudyStatusOfStudyStatusStudyEdge!]! @memgraphRelationship(type: "of_study_status", direction: OUT)
+}
+
+type Survival implements MemgraphNode @memgraphNode(label: "survival") {
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  adverse_event: JSON
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  age_at_event_free_survival_status: JSON
+  age_at_last_known_survival_status: BigInt
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  cause_of_death: JSON
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  comorbidity: JSON
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  comorbidity_method_of_diagnosis: JSON
+  created: DateTime
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  event_free_survival_status: JSON
   first_event: String
-  event_free_survival_status: String
-  age_at_event_free_survival_status: Float
-  follow_up_category: String
-  follow_up_other: String
-  adverse_event: String
-  comorbidity: String
-  comorbidity_method_of_diagnosis: String
-  risk_factor: String
-  cause_of_death: String
-  id: String
-  participant_of_survival: [participant!]! @relationship(type: "of_survival", direction: OUT)
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  follow_up_category: JSON
+  guid: String
+  last_known_survival_status: String
+  # Type absent from typed-property export; conservatively mapped to JSON.
+  risk_factor: JSON
+  survival_id: String
+
+  out_of_survival_to_participant_edges: [SurvivalOfSurvivalParticipantEdge!]! @memgraphRelationship(type: "of_survival", direction: OUT)
 }
 
-type synonym {
-  synonym_id: String
-  repository_of_synonym_id: String
+type Synonym implements MemgraphNode @memgraphNode(label: "synonym") {
   associated_id: String
-  domain_description: String
-  domain_category: String
+  created: DateTime
   data_location: String
-  id: String
-  study_of_synonym: [study!]! @relationship(type: "of_synonym", direction: OUT)
-  participant_of_synonym: [participant!]! @relationship(type: "of_synonym", direction: OUT)
-  sample_of_synonym: [sample!]! @relationship(type: "of_synonym", direction: OUT)
+  domain_category: [JSON]
+  domain_description: String
+  guid: String
+  repository_of_synonym_id: String
+  synonym_id: String
+
+  out_of_synonym_to_participant_edges: [SynonymOfSynonymParticipantEdge!]! @memgraphRelationship(type: "of_synonym", direction: OUT)
+  out_of_synonym_to_sample_edges: [SynonymOfSynonymSampleEdge!]! @memgraphRelationship(type: "of_synonym", direction: OUT)
 }
 
-type treatment {
-  treatment_id: String
-  age_at_treatment_start: Float
-  age_at_treatment_end: Float
-  treatment_type: String
-  treatment_agent: String
-  dose: String
-  dose_unit: String
-  dose_route: String
-  dose_frequency: String
-  id: String
-  participant_of_treatment: [participant!]! @relationship(type: "of_treatment", direction: OUT)
+type TreatmentChemotherapy implements MemgraphNode @memgraphNode(label: "treatment_chemotherapy") {
+  age_at_treatment_end: BigInt
+  age_at_treatment_start: BigInt
+  chemotherapy_agent: [JSON]
+  chemotherapy_type: [JSON]
+  created: DateTime
+  guid: String
+  treatment_chemotherapy_id: String
+  treatment_type: [JSON]
+
+  out_of_treatment_chemotherapy_to_participant_edges: [TreatmentChemotherapyOfTreatmentChemotherapyParticipantEdge!]! @memgraphRelationship(type: "of_treatment_chemotherapy", direction: OUT)
 }
 
-type treatment_response {
+type TreatmentOther implements MemgraphNode @memgraphNode(label: "treatment_other") {
+  age_at_treatment_end: BigInt
+  age_at_treatment_start: BigInt
+  created: DateTime
+  guid: String
+  other_treatment_type: [JSON]
+  treatment_other_id: String
+  treatment_type: [JSON]
+
+  out_of_treatment_other_to_participant_edges: [TreatmentOtherOfTreatmentOtherParticipantEdge!]! @memgraphRelationship(type: "of_treatment_other", direction: OUT)
+}
+
+type TreatmentRadiation implements MemgraphNode @memgraphNode(label: "treatment_radiation") {
+  age_at_treatment_end: BigInt
+  age_at_treatment_start: BigInt
+  anatomic_site: [JSON]
+  beam_radiation_type: [JSON]
+  created: DateTime
+  guid: String
+  radiation_therapy_type: [JSON]
+  treatment_radiation_id: String
+  treatment_type: [JSON]
+
+  out_of_treatment_radiation_to_participant_edges: [TreatmentRadiationOfTreatmentRadiationParticipantEdge!]! @memgraphRelationship(type: "of_treatment_radiation", direction: OUT)
+}
+
+type TreatmentResponse implements MemgraphNode @memgraphNode(label: "treatment_response") {
+  age_at_response: BigInt
+  created: DateTime
+  guid: String
+  response: [JSON]
+  response_category: [JSON]
+  response_system: [JSON]
   treatment_response_id: String
-  response: String
-  age_at_response: Float
-  response_category: String
-  response_system: String
-  id: String
-  participant_of_treatment_response: [participant!]! @relationship(type: "of_treatment_response", direction: OUT)
+
+  out_of_treatment_response_to_participant_edges: [TreatmentResponseOfTreatmentResponseParticipantEdge!]! @memgraphRelationship(type: "of_treatment_response", direction: OUT)
+}
+
+type TreatmentSurgery implements MemgraphNode @memgraphNode(label: "treatment_surgery") {
+  age_at_treatment_end: BigInt
+  age_at_treatment_start: BigInt
+  anatomic_site: [JSON]
+  created: DateTime
+  guid: String
+  resection_margin_status: [JSON]
+  surgery_type: [JSON]
+  treatment_surgery_id: String
+  treatment_type: [JSON]
+
+  out_of_treatment_surgery_to_participant_edges: [TreatmentSurgeryOfTreatmentSurgeryParticipantEdge!]! @memgraphRelationship(type: "of_treatment_surgery", direction: OUT)
+}
+
+type CellLineOfCellLineSampleEdge @memgraphEdge(type: "of_cell_line", startLabel: "cell_line", endLabel: "sample") {
+  from: CellLine!
+  to: Sample!
+  created: DateTime
+}
+
+type CellLineOfCellLineStudyEdge @memgraphEdge(type: "of_cell_line", startLabel: "cell_line", endLabel: "study") {
+  from: CellLine!
+  to: Study!
+  created: DateTime
+}
+
+type ClinicalMeasureFileOfClinicalMeasureFileParticipantEdge @memgraphEdge(type: "of_clinical_measure_file", startLabel: "clinical_measure_file", endLabel: "participant") {
+  from: ClinicalMeasureFile!
+  to: Participant!
+  created: DateTime
+}
+
+type ClinicalMeasureFileOfClinicalMeasureFileStudyEdge @memgraphEdge(type: "of_clinical_measure_file", startLabel: "clinical_measure_file", endLabel: "study") {
+  from: ClinicalMeasureFile!
+  to: Study!
+  created: DateTime
+}
+
+type ConsentGroupOfConsentGroupStudyEdge @memgraphEdge(type: "of_consent_group", startLabel: "consent_group", endLabel: "study") {
+  from: ConsentGroup!
+  to: Study!
+  created: DateTime
+}
+
+type CytogenomicFileOfCytogenomicFileSampleEdge @memgraphEdge(type: "of_cytogenomic_file", startLabel: "cytogenomic_file", endLabel: "sample") {
+  from: CytogenomicFile!
+  to: Sample!
+  created: DateTime
+}
+
+type DiagnosisOfDiagnosisParticipantEdge @memgraphEdge(type: "of_diagnosis", startLabel: "diagnosis", endLabel: "participant") {
+  from: Diagnosis!
+  to: Participant!
+  created: DateTime
+}
+
+type DiagnosisOfDiagnosisSampleEdge @memgraphEdge(type: "of_diagnosis", startLabel: "diagnosis", endLabel: "sample") {
+  from: Diagnosis!
+  to: Sample!
+  created: DateTime
+}
+
+type ExposureOfExposureParticipantEdge @memgraphEdge(type: "of_exposure", startLabel: "exposure", endLabel: "participant") {
+  from: Exposure!
+  to: Participant!
+  created: DateTime
+}
+
+type FamilyRelationshipOfFamilyRelationshipParticipantEdge @memgraphEdge(type: "of_family_relationship", startLabel: "family_relationship", endLabel: "participant") {
+  from: FamilyRelationship!
+  to: Participant!
+  created: DateTime
+}
+
+type GenericFileOfGenericFileSampleEdge @memgraphEdge(type: "of_generic_file", startLabel: "generic_file", endLabel: "sample") {
+  from: GenericFile!
+  to: Sample!
+  created: DateTime
+}
+
+type GenericFileOfGenericFileStudyEdge @memgraphEdge(type: "of_generic_file", startLabel: "generic_file", endLabel: "study") {
+  from: GenericFile!
+  to: Study!
+  created: DateTime
+}
+
+type GeneticAnalysisOfGeneticAnalysisSampleEdge @memgraphEdge(type: "of_genetic_analysis", startLabel: "genetic_analysis", endLabel: "sample") {
+  from: GeneticAnalysis!
+  to: Sample!
+  created: DateTime
+}
+
+type LaboratoryTestOfLaboratoryTestParticipantEdge @memgraphEdge(type: "of_laboratory_test", startLabel: "laboratory_test", endLabel: "participant") {
+  from: LaboratoryTest!
+  to: Participant!
+  created: DateTime
+}
+
+type LaboratoryTestOfLaboratoryTestSampleEdge @memgraphEdge(type: "of_laboratory_test", startLabel: "laboratory_test", endLabel: "sample") {
+  from: LaboratoryTest!
+  to: Sample!
+  created: DateTime
+}
+
+type MedicalHistoryOfMedicalHistoryParticipantEdge @memgraphEdge(type: "of_medical_history", startLabel: "medical_history", endLabel: "participant") {
+  from: MedicalHistory!
+  to: Participant!
+  created: DateTime
+}
+
+type MethylationArrayFileOfMethylationArrayFileSampleEdge @memgraphEdge(type: "of_methylation_array_file", startLabel: "methylation_array_file", endLabel: "sample") {
+  from: MethylationArrayFile!
+  to: Sample!
+  created: DateTime
+}
+
+type ParticipantOfParticipantConsentGroupEdge @memgraphEdge(type: "of_participant", startLabel: "participant", endLabel: "consent_group") {
+  from: Participant!
+  to: ConsentGroup!
+  created: DateTime
+}
+
+type PathologyFileOfPathologyFileSampleEdge @memgraphEdge(type: "of_pathology_file", startLabel: "pathology_file", endLabel: "sample") {
+  from: PathologyFile!
+  to: Sample!
+  created: DateTime
+}
+
+type PdxOfPdxSampleEdge @memgraphEdge(type: "of_pdx", startLabel: "pdx", endLabel: "sample") {
+  from: Pdx!
+  to: Sample!
+  created: DateTime
+}
+
+type PublicationOfPublicationStudyEdge @memgraphEdge(type: "of_publication", startLabel: "publication", endLabel: "study") {
+  from: Publication!
+  to: Study!
+  created: DateTime
+}
+
+type RadiologyFileOfRadiologyFileParticipantEdge @memgraphEdge(type: "of_radiology_file", startLabel: "radiology_file", endLabel: "participant") {
+  from: RadiologyFile!
+  to: Participant!
+  created: DateTime
+}
+
+type SampleOfSampleCellLineEdge @memgraphEdge(type: "of_sample", startLabel: "sample", endLabel: "cell_line") {
+  from: Sample!
+  to: CellLine!
+  created: DateTime
+}
+
+type SampleOfSampleParticipantEdge @memgraphEdge(type: "of_sample", startLabel: "sample", endLabel: "participant") {
+  from: Sample!
+  to: Participant!
+  created: DateTime
+}
+
+type SampleOfSamplePdxEdge @memgraphEdge(type: "of_sample", startLabel: "sample", endLabel: "pdx") {
+  from: Sample!
+  to: Pdx!
+  created: DateTime
+}
+
+type SequencingFileOfSequencingFileSampleEdge @memgraphEdge(type: "of_sequencing_file", startLabel: "sequencing_file", endLabel: "sample") {
+  from: SequencingFile!
+  to: Sample!
+  created: DateTime
+}
+
+type StudyAdminOfStudyAdminStudyEdge @memgraphEdge(type: "of_study_admin", startLabel: "study_admin", endLabel: "study") {
+  from: StudyAdmin!
+  to: Study!
+  created: DateTime
+}
+
+type StudyArmOfStudyArmStudyEdge @memgraphEdge(type: "of_study_arm", startLabel: "study_arm", endLabel: "study") {
+  from: StudyArm!
+  to: Study!
+  created: DateTime
+}
+
+type StudyFundingOfStudyFundingStudyEdge @memgraphEdge(type: "of_study_funding", startLabel: "study_funding", endLabel: "study") {
+  from: StudyFunding!
+  to: Study!
+  created: DateTime
+}
+
+type StudyPersonnelOfStudyPersonnelStudyEdge @memgraphEdge(type: "of_study_personnel", startLabel: "study_personnel", endLabel: "study") {
+  from: StudyPersonnel!
+  to: Study!
+  created: DateTime
+}
+
+type StudyStatusOfStudyStatusStudyEdge @memgraphEdge(type: "of_study_status", startLabel: "study_status", endLabel: "study") {
+  from: StudyStatus!
+  to: Study!
+  created: DateTime
+}
+
+type SurvivalOfSurvivalParticipantEdge @memgraphEdge(type: "of_survival", startLabel: "survival", endLabel: "participant") {
+  from: Survival!
+  to: Participant!
+  created: DateTime
+}
+
+type SynonymOfSynonymParticipantEdge @memgraphEdge(type: "of_synonym", startLabel: "synonym", endLabel: "participant") {
+  from: Synonym!
+  to: Participant!
+  created: DateTime
+}
+
+type SynonymOfSynonymSampleEdge @memgraphEdge(type: "of_synonym", startLabel: "synonym", endLabel: "sample") {
+  from: Synonym!
+  to: Sample!
+  created: DateTime
+}
+
+type TreatmentChemotherapyOfTreatmentChemotherapyParticipantEdge @memgraphEdge(type: "of_treatment_chemotherapy", startLabel: "treatment_chemotherapy", endLabel: "participant") {
+  from: TreatmentChemotherapy!
+  to: Participant!
+  created: DateTime
+}
+
+type TreatmentOtherOfTreatmentOtherParticipantEdge @memgraphEdge(type: "of_treatment_other", startLabel: "treatment_other", endLabel: "participant") {
+  from: TreatmentOther!
+  to: Participant!
+  created: DateTime
+}
+
+type TreatmentRadiationOfTreatmentRadiationParticipantEdge @memgraphEdge(type: "of_treatment_radiation", startLabel: "treatment_radiation", endLabel: "participant") {
+  from: TreatmentRadiation!
+  to: Participant!
+  created: DateTime
+}
+
+type TreatmentResponseOfTreatmentResponseParticipantEdge @memgraphEdge(type: "of_treatment_response", startLabel: "treatment_response", endLabel: "participant") {
+  from: TreatmentResponse!
+  to: Participant!
+  created: DateTime
+}
+
+type TreatmentSurgeryOfTreatmentSurgeryParticipantEdge @memgraphEdge(type: "of_treatment_surgery", startLabel: "treatment_surgery", endLabel: "participant") {
+  from: TreatmentSurgery!
+  to: Participant!
+  created: DateTime
 }
 
