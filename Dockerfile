@@ -1,5 +1,5 @@
 # Use Node.js Alpine image for smaller size and better security
-FROM node:20-alpine
+FROM node:22.23.2-alpine3.24
 
 # Apply the latest security updates from the Alpine repository.
 RUN apk upgrade --no-cache
@@ -14,8 +14,10 @@ RUN addgroup -g 1001 -S nodejs && \
 # Copy package files first for better caching
 COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
+# Install production dependencies, then remove the unused npm CLI from runtime.
+RUN npm ci --omit=dev --legacy-peer-deps && \
+    npm cache clean --force && \
+    rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 # Copy application code
 COPY --chown=nodejs:nodejs . .

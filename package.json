@@ -5,32 +5,23 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@apollo/federation-internals": "^2.11.6",
-    "@apollo/server": "^4.13.0",
-    "@apollo/server-plugin-landing-page-graphql-playground": "^4.0.1",
-    "@as-integrations/aws-lambda": "^3.1.0",
+    "@apollo/server": "^5.5.1",
     "@neo4j/graphql": "^6.3.0",
     "dotenv": "^16.4.5",
-    "form-data": "^4.0.6",
-    "graphql": "^16.10.0",
-    "lodash": "^4.18.0",
-    "neo4j-driver": "^5.28.0",
-    "path-to-regexp": "^0.1.13",
-    "picomatch": "^2.3.2"
+    "graphql": "^16.14.2",
+    "neo4j-driver": "^5.28.3"
   },
   "devDependencies": {
-    "docsify-cli": "^4.4.4",
+    "docsify-cli": "^5.0.0",
     "typescript": "^5.7.3"
   },
   "overrides": {
-    "@apollo/subgraph": {
-      "@apollo/federation-internals": "2.11.6"
-    },
-    "@graphql-tools/resolvers-composition": {
-      "lodash": "4.18.0"
-    },
-    "express": {
-      "path-to-regexp": "0.1.13"
-    }
+    "@apollo/federation-internals": "2.14.4",
+    "@apollo/subgraph": "2.14.4",
+    "@protobufjs/utf8": "1.1.2",
+    "@graphql-tools/resolvers-composition": "7.0.36",
+    "qs": "6.15.3",
+    "uuid": "11.1.1",
+    "ws": "7.5.11"
   }
 }

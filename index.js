@@ -2,11 +2,7 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import neo4j from 'neo4j-driver'
-import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-plugin-landing-page-graphql-playground";
- import {
-  ApolloServerPluginLandingPageLocalDefault,
-  ApolloServerPluginLandingPageProductionDefault,
-} from "@apollo/server/plugin/landingPage/default";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
 import dotenv from 'dotenv';
 import { readFileSync } from 'fs';
 import { getDatabaseConfig, getServerConfig } from './config.js';
