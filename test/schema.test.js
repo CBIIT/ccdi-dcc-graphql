@@ -16,6 +16,8 @@ test('schema compiles with Neo4j GraphQL built-in scalars', async () => {
     assert.equal(schema.getType('BigInt')?.name, 'BigInt');
     assert.equal(schema.getType('DateTime')?.name, 'DateTime');
     assert.equal(schema.getType('JSON')?.name, 'JSON');
+    assert.ok(schema.getQueryType()?.getFields().studies);
+    assert.equal(schema.getMutationType(), undefined);
   } finally {
     await driver.close();
   }

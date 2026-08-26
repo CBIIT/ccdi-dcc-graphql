@@ -33,8 +33,28 @@ const neoSchema = new Neo4jGraphQL({
  
 
 let plugins = [];
-  // Use default landing page instead of GraphQL Playground to avoid auto-suggestions
-  plugins = [ApolloServerPluginLandingPageLocalDefault()];
+plugins = [
+        ApolloServerPluginLandingPageLocalDefault({
+                document: `query {
+  studyStatusesConnection {
+    totalCount
+    aggregate {
+      count {
+        nodes
+      }
+    }
+    edges {
+      node {
+        guid
+        study_status_id
+        number_of_files
+        number_of_participants
+      }
+    }
+  }
+}`
+        })
+];
 
 
 const server = new ApolloServer({
@@ -43,6 +63,7 @@ const server = new ApolloServer({
     debug: true,
     plugins
 });
+
 const { url } = await startStandaloneServer(server, {
     context: async ({ req }) => ({ 
         req, 
