@@ -2,11 +2,7 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import neo4j from 'neo4j-driver'
-import { ApolloServerPluginLandingPageGraphQLPlayground } from "@apollo/server-plugin-landing-page-graphql-playground";
- import {
-  ApolloServerPluginLandingPageLocalDefault,
-  ApolloServerPluginLandingPageProductionDefault,
-} from "@apollo/server/plugin/landingPage/default";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
 import dotenv from 'dotenv';
 import { readFileSync } from 'fs';
 import { getDatabaseConfig, getServerConfig } from './config.js';
@@ -37,8 +33,28 @@ const neoSchema = new Neo4jGraphQL({
  
 
 let plugins = [];
-  // Use default landing page instead of GraphQL Playground to avoid auto-suggestions
-  plugins = [ApolloServerPluginLandingPageLocalDefault()];
+plugins = [
+        ApolloServerPluginLandingPageLocalDefault({
+                document: `query {
+  studyStatusesConnection {
+    totalCount
+    aggregate {
+      count {
+        nodes
+      }
+    }
+    edges {
+      node {
+        guid
+        study_status_id
+        number_of_files
+        number_of_participants
+      }
+    }
+  }
+}`
+        })
+];
 
 
 const server = new ApolloServer({
@@ -47,6 +63,7 @@ const server = new ApolloServer({
     debug: true,
     plugins
 });
+
 const { url } = await startStandaloneServer(server, {
     context: async ({ req }) => ({ 
         req, 
